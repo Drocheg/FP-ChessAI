@@ -2,6 +2,8 @@
 tp-funcional.cabal
 *~
 
+.idea/*
+
 # Created by https://www.gitignore.io/api/git,haskell,intellij
 # Edit at https://www.gitignore.io/?templates=git,haskell,intellij
 
