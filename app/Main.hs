@@ -13,3 +13,4 @@ gameTick board = do
   option <- getLine
   let (board, _, _) = boards!!(read option)
   gameTick board
+
