@@ -14,7 +14,7 @@ data MoveType = InvalidMove | TakeMove | SimpleMove
 data PiecePosition = PiecePosition {
   x::Int,
   y::Int
-} deriving (Show)
+} deriving (Show, Eq)
 
 initialBoard::Board
 initialBoard = Board White False False [
@@ -33,8 +33,8 @@ testBoard = Board White False False[
         Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False),
         Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), 
         None                    , Piece White (Pawn False), None                    , None                    , None                    , None                    , None                    , None                    ,
-        None                    , Piece White (Knight)    , None                    , None                    , None                    , None                    , None                    , None                    ,
-        None                    , None                    , Piece Black (Pawn False), None                    , None                    , None                    , None                    , None                    ,
+        None                    , Piece White (Pawn True)    , None                 , None                    , None                    , None                    , None                    , None                    ,
+        None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    ,
         None                    , None                    , Piece Black (Pawn False), None                    , None                    , None                    , None                    , None                    ,
         Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), 
         Piece Black (Rook False), Piece Black (Knight    ), Piece Black (Bishop    ), Piece Black (Queen     ), Piece Black (King False), Piece Black (Bishop    ), Piece Black (Knight    ), Piece Black (Rook False)
@@ -63,6 +63,26 @@ knightBottomRight = move (-2) 1
 knightBottomLeft = move (-2) (-1)
 knightLeftTop = move 1 (-2)
 knightLeftBottom = move (-1) (-2)
+
+listBoards :: PiecePosition -> Board -> [Board]
+listBoards piecePosition board = listBoardsAux piecePosition board (listMovePrev piecePosition board)
+
+listBoardsAux :: PiecePosition -> Board -> [PiecePosition] -> [Board]
+listBoardsAux piecePosition board [] = []
+listBoardsAux piecePosition board (m:mx) = (listBoardsWithMovement piecePosition board m):(listBoardsAux piecePosition board mx)
+
+listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> Board
+listBoardsWithMovement oldPosition (Board color b1 b2 pieces) newPosition = Board color b1 b2 (listBoardsWithMovementAux 0 oldPosition pieces newPosition (getPiece (Board color b1 b2 pieces) oldPosition))
+
+listBoardsWithMovementAux :: Int -> PiecePosition -> [Piece] -> PiecePosition -> Piece -> [Piece]
+listBoardsWithMovementAux 64 _ _ _ _ = []
+listBoardsWithMovementAux index oldPosition (p:px) newPosition piece =
+    if (getIndex newPosition) == index then piece:(listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
+    else if (getIndex oldPosition) == index then None:(listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
+    else p:(listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
+
+getIndex :: PiecePosition -> Int
+getIndex (PiecePosition x y) = x*8 + y
 
 listMovePrev:: PiecePosition -> Board -> [PiecePosition]
 listMovePrev index board = listMoves index (getPiece board index) board 
@@ -127,6 +147,7 @@ moveTypeOnlyTakeAllowed::Color -> Board -> PiecePosition -> MoveType
 moveTypeOnlyTakeAllowed myColor board index = case (getPiece board index) of
   None -> InvalidMove
   Piece otherColor pieceTypes -> if (otherColor == myColor) then InvalidMove else TakeMove
+
 
 getPiece::Board -> PiecePosition -> Piece
 getPiece (Board _ _ _ pieces) (PiecePosition posX posY) = pieces !! (posX * 8 + posY)
