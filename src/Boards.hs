@@ -1,4 +1,4 @@
-module Boards (initialBoard, listAllMoves, Board (Board), PieceType (..), Color (..), Piece (..) ) where 
+module Boards (getPiece, initialBoard, listAllMoves, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where 
 data Color = Black | White  deriving (Show, Eq)
 data PieceType = Pawn Bool 
   | Rook Bool
@@ -15,6 +15,8 @@ data PiecePosition = PiecePosition {
   x::Int,
   y::Int
 } deriving (Show, Eq)
+
+type BoardWithMovement = (Board, PiecePosition, PiecePosition)
 
 initialBoard::Board
 initialBoard = Board White False False [
@@ -64,15 +66,20 @@ knightBottomLeft = move (-2) (-1)
 knightLeftTop = move 1 (-2)
 knightLeftBottom = move (-1) (-2)
 
-listBoards :: PiecePosition -> Board -> [Board]
+listBoards :: PiecePosition -> Board -> [BoardWithMovement]
 listBoards piecePosition board = listBoardsAux piecePosition board (listMovePrev piecePosition board)
 
-listBoardsAux :: PiecePosition -> Board -> [PiecePosition] -> [Board]
+listBoardsAux :: PiecePosition -> Board -> [PiecePosition] -> [BoardWithMovement]
 listBoardsAux piecePosition board [] = []
 listBoardsAux piecePosition board (m:mx) = (listBoardsWithMovement piecePosition board m):(listBoardsAux piecePosition board mx)
 
-listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> Board
-listBoardsWithMovement oldPosition (Board color b1 b2 pieces) newPosition = Board color b1 b2 (listBoardsWithMovementAux 0 oldPosition pieces newPosition (getPiece (Board color b1 b2 pieces) oldPosition))
+oppositeColor::Color->Color
+oppositeColor White = Black
+oppositeColor Black = White
+
+listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> BoardWithMovement
+listBoardsWithMovement oldPosition (Board color b1 b2 pieces) newPosition = 
+  (Board (oppositeColor color) b1 b2 (listBoardsWithMovementAux 0 oldPosition pieces newPosition (getPiece (Board color b1 b2 pieces) oldPosition)), oldPosition, newPosition)
 
 listBoardsWithMovementAux :: Int -> PiecePosition -> [Piece] -> PiecePosition -> Piece -> [Piece]
 listBoardsWithMovementAux 64 _ _ _ _ = []
@@ -152,17 +159,20 @@ moveTypeOnlyTakeAllowed myColor board index = case (getPiece board index) of
 getPiece::Board -> PiecePosition -> Piece
 getPiece (Board _ _ _ pieces) (PiecePosition posX posY) = pieces !! (posX * 8 + posY)
 
-listAllMoves::Board -> [Board]
+listAllMoves::Board -> [BoardWithMovement]
 listAllMoves board = iterateAllPositions allPositions board
 
 allPositions = map (\x -> PiecePosition (x `div` 8) (x `mod` 8)) [0..63]
-iterateAllPositions:: [PiecePosition] -> Board -> [Board]
+iterateAllPositions:: [PiecePosition] -> Board -> [BoardWithMovement]
 iterateAllPositions [] board = []
-iterateAllPositions (x:xs) board = (case (checkPiece (getPiece board x)) of
-  True  ->  [] --listMovePrev x board 
+iterateAllPositions (x:xs) board = (case (checkPiece (getColor board) (getPiece board x)) of
+  True  ->  listBoards x board
   False -> []
   ) ++ iterateAllPositions xs board
 
-checkPiece::Piece -> Bool
-checkPiece None = False
-checkPiece _ = True
+checkPiece::Color -> Piece -> Bool
+checkPiece _ None = False
+checkPiece playerColor (Piece pieceColor _) = pieceColor == playerColor
+
+getColor::Board -> Color
+getColor (Board c _ _ _) = c

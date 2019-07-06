@@ -1,7 +1,6 @@
 module Main where
 import Boards
 import UI
-
 main :: IO ()
 main = do 
   gameTick initialBoard
@@ -9,6 +8,8 @@ main = do
 gameTick :: Board -> IO ()
 gameTick board = do
   putStrLn (printBoard board)
-  putStrLn (show (listAllMoves board))
-  move <- getLine
+  let boards = listAllMoves board
+  putStrLn (printPossibleMoves  0 board boards)
+  option <- getLine
+  let (board, _, _) = boards!!(read option)
   gameTick board
