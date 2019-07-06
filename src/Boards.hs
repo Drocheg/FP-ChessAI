@@ -1,22 +1,23 @@
-
+module Boards (initialBoard, listAllMoves, Board (Board), PieceType (..), Color (..), Piece (..) ) where 
 data Color = Black | White  deriving (Show, Eq)
-data PieceTypes = Pawn Bool 
+data PieceType = Pawn Bool 
   | Rook Bool
   | King Bool
   | Knight
   | Queen
   | Bishop deriving (Show)
 
-data Piece = None | Piece Color PieceTypes deriving (Show)
-data Board = Board [Piece]  deriving (Show)
+data Piece = None | Piece Color PieceType deriving (Show)
+-- Board <CurrentTurn> <WhiteCastled> <BlackCastled>
+data Board = Board Color Bool Bool [Piece]  deriving (Show)
 data MoveType = InvalidMove | TakeMove | SimpleMove
 data PiecePosition = PiecePosition {
-                                    x::Int,
-                                    y::Int
+  x::Int,
+  y::Int
 } deriving (Show)
 
 initialBoard::Board
-initialBoard = Board [
+initialBoard = Board White False False [
         Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False),
         Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), 
         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
@@ -28,13 +29,13 @@ initialBoard = Board [
         ]
 
 testBoard::Board
-testBoard = Board [
+testBoard = Board White False False[
         Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False),
         Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), 
-        None                    , Piece White (Pawn False), None                     , None                    , None                    , None                    , None                    , None                    ,
-        None                   , Piece White (Pawn False),   None                     , None                    , None                    , None                    , None                    , None                    ,
-        Piece White (Pawn False) , Piece Black (Pawn False), Piece Black (Pawn False) , None                    , None                    , None                    , None                    , None                    ,
-        None                    , None                   , Piece Black (Pawn False)  , None                    , None                    , None                    , None                    , None                    ,
+        None                    , Piece White (Pawn False), None                    , None                    , None                    , None                    , None                    , None                    ,
+        None                    , Piece White (Knight)    , None                    , None                    , None                    , None                    , None                    , None                    ,
+        None                    , None                    , Piece Black (Pawn False), None                    , None                    , None                    , None                    , None                    ,
+        None                    , None                    , Piece Black (Pawn False), None                    , None                    , None                    , None                    , None                    ,
         Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), 
         Piece Black (Rook False), Piece Black (Knight    ), Piece Black (Bishop    ), Piece Black (Queen     ), Piece Black (King False), Piece Black (Bishop    ), Piece Black (Knight    ), Piece Black (Rook False)
         ]
@@ -46,52 +47,21 @@ move movX movY (PiecePosition posX posY) = let newPiecePosition = (PiecePosition
   if (x newPiecePosition) >= 8 || (x newPiecePosition) < 0 || (y newPiecePosition) >= 8 || (y newPiecePosition) < 0 then Nothing
   else Just newPiecePosition
 
-top::PiecePosition -> Maybe PiecePosition
 top = move 1 0
-
-topRight::PiecePosition -> Maybe PiecePosition
 topRight = move 1 1
-
-right::PiecePosition -> Maybe PiecePosition
 right = move 0 1
-
-rightBottom::PiecePosition -> Maybe PiecePosition
 rightBottom = move (-1) 1
-
-bottom::PiecePosition -> Maybe PiecePosition
 bottom = move (-1) 0
-
-bottomLeft::PiecePosition -> Maybe PiecePosition
 bottomLeft = move (-1) (-1)
-
-left::PiecePosition -> Maybe PiecePosition
 left = move 0 (-1)
-
-leftTop::PiecePosition -> Maybe PiecePosition
 leftTop = move 1 (-1)
-
-knightTopRight::PiecePosition -> Maybe PiecePosition
 knightTopRight = move 2 1
-
-knightTopLeft::PiecePosition -> Maybe PiecePosition
 knightTopLeft = move 2 (-1)
-
-knightRightTop::PiecePosition -> Maybe PiecePosition
 knightRightTop = move 1 2
-
-knightRightBottom::PiecePosition -> Maybe PiecePosition
 knightRightBottom = move (-1) 2
-
-knightBottomRight::PiecePosition -> Maybe PiecePosition
 knightBottomRight = move (-2) 1
-
-knightBottomLeft::PiecePosition -> Maybe PiecePosition
 knightBottomLeft = move (-2) (-1)
-
-knightLeftTop::PiecePosition -> Maybe PiecePosition
 knightLeftTop = move 1 (-2)
-
-knightLeftBottom::PiecePosition -> Maybe PiecePosition
 knightLeftBottom = move (-1) (-2)
 
 listMovePrev:: PiecePosition -> Board -> [PiecePosition]
@@ -159,4 +129,19 @@ moveTypeOnlyTakeAllowed myColor board index = case (getPiece board index) of
   Piece otherColor pieceTypes -> if (otherColor == myColor) then InvalidMove else TakeMove
 
 getPiece::Board -> PiecePosition -> Piece
-getPiece (Board pieces) (PiecePosition posX posY) = pieces !! (posX * 8 + posY)
+getPiece (Board _ _ _ pieces) (PiecePosition posX posY) = pieces !! (posX * 8 + posY)
+
+listAllMoves::Board -> [Board]
+listAllMoves board = iterateAllPositions allPositions board
+
+allPositions = map (\x -> PiecePosition (x `div` 8) (x `mod` 8)) [0..63]
+iterateAllPositions:: [PiecePosition] -> Board -> [Board]
+iterateAllPositions [] board = []
+iterateAllPositions (x:xs) board = (case (checkPiece (getPiece board x)) of
+  True  ->  [] --listMovePrev x board 
+  False -> []
+  ) ++ iterateAllPositions xs board
+
+checkPiece::Piece -> Bool
+checkPiece None = False
+checkPiece _ = True
