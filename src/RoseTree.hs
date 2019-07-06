@@ -109,7 +109,6 @@ freeMinimax = minimax freeTree (TreeInfo id 3 False) 0 (AlphaBeta (-1000000) 100
 
 
 
-
 --- Other functions ---
 
 --- Count nodes ---
