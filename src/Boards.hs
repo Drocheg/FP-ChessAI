@@ -1,4 +1,4 @@
-module Boards (getPiece, initialBoard, listAllMoves, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
+module Boards (getPiece, initialBoard, testBoard2, listAllMoves, chessMinimax, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
 
 import Minimax
 
@@ -12,7 +12,7 @@ data PieceType = Pawn Bool
 
 data Piece = None | Piece Color PieceType deriving (Show)
 -- Board <CurrentTurn> <WhiteCastled> <BlackCastled>
-data Board = Board Color Bool Bool [Piece]  deriving (Show)
+data Board = Board Color Bool Bool Int [Piece] deriving (Show)
 data MoveType = InvalidMove | TakeMove | SimpleMove
 data PiecePosition = PiecePosition {
   x::Int,
@@ -22,7 +22,7 @@ data PiecePosition = PiecePosition {
 type BoardWithMovement = (Board, PiecePosition, PiecePosition)
 
 initialBoard::Board
-initialBoard = Board White False False [
+initialBoard = Board White False False 0 [
         Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False),
         Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), 
         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
@@ -34,7 +34,7 @@ initialBoard = Board White False False [
         ]
 
 testBoard::Board
-testBoard = Board White False False[
+testBoard = Board White False False 100 [
         Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False),
         Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), 
         None                    , Piece White (Pawn False), None                    , None                    , None                    , None                    , None                    , None                    ,
@@ -46,8 +46,8 @@ testBoard = Board White False False[
         ]
 
 testBoard2::Board
-testBoard2 = Board White False False[
-        Piece White (King False), None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
+testBoard2 = Board Black False False (-500) [
+        Piece White (King False), None                   , Piece Black (Rook False) , None                    , None                    , None                    , None                    , None                    ,
         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
         Piece Black (King False), None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
@@ -93,8 +93,10 @@ oppositeColor White = Black
 oppositeColor Black = White
 
 listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> BoardWithMovement
-listBoardsWithMovement oldPosition (Board color b1 b2 pieces) newPosition = 
-  (Board (oppositeColor color) b1 b2 (listBoardsWithMovementAux 0 oldPosition pieces newPosition (getPiece (Board color b1 b2 pieces) oldPosition)), oldPosition, newPosition)
+listBoardsWithMovement oldPosition (Board color b1 b2 oldScore pieces) newPosition =
+    let piece = getPieceFromPieces pieces newPosition in
+    let newScore = oldScore - (scorePiece piece) in
+    (Board (oppositeColor color) b1 b2 newScore (listBoardsWithMovementAux 0 oldPosition pieces newPosition piece), oldPosition, newPosition)
 
 listBoardsWithMovementAux :: Int -> PiecePosition -> [Piece] -> PiecePosition -> Piece -> [Piece]
 listBoardsWithMovementAux 64 _ _ _ _ = []
@@ -172,7 +174,9 @@ moveTypeOnlyTakeAllowed myColor board index = case (getPiece board index) of
 
 
 getPiece::Board -> PiecePosition -> Piece
-getPiece (Board _ _ _ pieces) (PiecePosition posX posY) = pieces !! (posX * 8 + posY)
+getPiece (Board _ _ _ _ pieces) piecePosition = getPieceFromPieces pieces piecePosition
+getPieceFromPieces:: [Piece] -> PiecePosition -> Piece
+getPieceFromPieces pieces (PiecePosition posX posY)  = pieces !! (posX * 8 + posY)
 
 listAllMoves::Board -> [BoardWithMovement]
 listAllMoves board = iterateAllPositions allPositions board
@@ -190,17 +194,20 @@ checkPiece _ None = False
 checkPiece playerColor (Piece pieceColor _) = pieceColor == playerColor
 
 getColor::Board -> Color
-getColor (Board c _ _ _) = c
+getColor (Board c _ _ _ _) = c
 
 listAllBoards :: Board -> [Board]
 listAllBoards board = map (\(x, _, _) -> x) (listAllMoves board)
 
 scoreBoard :: Board -> Int
-scoreBoard board = scoreBoardAux allPositions board
+scoreBoard (Board _ _ _ score _) = score
 
-scoreBoardAux :: [PiecePosition] -> Board -> Int
-scoreBoardAux [] board = 0
-scoreBoardAux (x:xs) board = scorePiece (getPiece board x) + scoreBoardAux xs board
+scoreFullBoard :: Board -> Int
+scoreFullBoard board = scoreFullBoardAux allPositions board
+
+scoreFullBoardAux :: [PiecePosition] -> Board -> Int
+scoreFullBoardAux [] board = 0
+scoreFullBoardAux (x:xs) board = scorePiece (getPiece board x) + scoreFullBoardAux xs board
 
 scorePiece :: Piece -> Int
 scorePiece None = 0
