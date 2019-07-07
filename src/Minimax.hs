@@ -21,12 +21,12 @@ data TreeInfo a = TreeInfo { scoreF::(a -> Int),
                              isMax::Bool --  function to get score, Level, isMax
 }
 
-minimaxAlphaBeta :: a -> (a -> Int) -> (a -> [a]) -> Int -> Bool -> Int -> Int -> a
-minimaxAlphaBeta node scoreF nextNodesF level isMax minScore maxScore =
-    (nodes (minimaxAlphaBetaWithInfo node scoreF nextNodesF level isMax minScore maxScore)) !! 0
+minimaxAlphaBeta :: (a -> Int) -> (a -> [a]) -> Int -> Int -> Int -> Bool -> a ->  a
+minimaxAlphaBeta scoreF nextNodesF minScore maxScore level isMax node =
+    (nodes (minimaxAlphaBetaWithInfo scoreF nextNodesF minScore maxScore level isMax node)) !! 0
 
-minimaxAlphaBetaWithInfo :: a -> (a -> Int) -> (a -> [a]) -> Int -> Bool -> Int -> Int -> MovePath a
-minimaxAlphaBetaWithInfo node scoreF nextNodesF level isMax minScore maxScore
+minimaxAlphaBetaWithInfo :: (a -> Int) -> (a -> [a]) -> Int -> Int -> Int -> Bool -> a -> MovePath a
+minimaxAlphaBetaWithInfo scoreF nextNodesF minScore maxScore level isMax node
     = minimax node (TreeInfo scoreF nextNodesF level isMax) 0 (AlphaBeta minScore maxScore)
 
 minimax :: a -> TreeInfo a -> Int -> AlphaBeta -> MovePath a -- Tree, treeInfo, indexMove

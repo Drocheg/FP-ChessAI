@@ -63,7 +63,7 @@ getRoseNextNodes :: RoseTree b -> [RoseTree b]
 getRoseNextNodes (Node b rs) = rs
 
 freeMinimax :: RoseTree Int
-freeMinimax = minimaxAlphaBeta freeTree getRoseTreeScore getRoseNextNodes 3 True (-1000000) 1000000
+freeMinimax = minimaxAlphaBeta getRoseTreeScore getRoseNextNodes (-1000000) 1000000 3 True freeTree
 
 
 

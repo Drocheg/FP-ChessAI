@@ -1,4 +1,7 @@
-module Boards (getPiece, initialBoard, listAllMoves, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where 
+module Boards (getPiece, initialBoard, listAllMoves, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
+
+import Minimax
+
 data Color = Black | White  deriving (Show, Eq)
 data PieceType = Pawn Bool 
   | Rook Bool
@@ -44,7 +47,7 @@ testBoard = Board White False False[
 
 testBoard2::Board
 testBoard2 = Board White False False[
-        Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False),
+        Piece White (King False), None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
         Piece Black (King False), None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
@@ -211,3 +214,9 @@ scorePieceType Queen = 900
 scorePieceType (King _) = 100000
 scorePieceType Knight = 300 -- Maybe change to make knight better than bishop
 scorePieceType (Pawn _) = 100
+
+chessMinimax :: Int -> Board -> Board
+chessMinimax deepness board = minimaxAlphaBeta scoreBoard listAllBoards (-1000000) 1000000 deepness ((getColor board) == White) board
+
+chessMinimaxDeep4 :: Board -> Board
+chessMinimaxDeep4 board = chessMinimax 4 board
