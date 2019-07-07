@@ -41,6 +41,18 @@ testBoard = Board White False False[
         Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), 
         Piece Black (Rook False), Piece Black (Knight    ), Piece Black (Bishop    ), Piece Black (Queen     ), Piece Black (King False), Piece Black (Bishop    ), Piece Black (Knight    ), Piece Black (Rook False)
         ]
+
+testBoard2::Board
+testBoard2 = Board White False False[
+        Piece White (King False), None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
+        None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
+        None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
+        Piece Black (King False), None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
+        None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
+        None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
+        None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
+        None                    , None                   , None                     , None                    , None                    , None                    , None                    , None
+        ]
             
 
 
@@ -176,3 +188,6 @@ checkPiece playerColor (Piece pieceColor _) = pieceColor == playerColor
 
 getColor::Board -> Color
 getColor (Board c _ _ _) = c
+
+listAllBoards :: Board -> [Board]
+listAllBoards board = map (\(x, _, _) -> x) (listAllMoves board)
