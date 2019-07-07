@@ -44,7 +44,7 @@ testBoard = Board White False False[
 
 testBoard2::Board
 testBoard2 = Board White False False[
-        Piece White (King False), None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
+        Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False),
         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
         Piece Black (King False), None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
@@ -191,3 +191,23 @@ getColor (Board c _ _ _) = c
 
 listAllBoards :: Board -> [Board]
 listAllBoards board = map (\(x, _, _) -> x) (listAllMoves board)
+
+scoreBoard :: Board -> Int
+scoreBoard board = scoreBoardAux allPositions board
+
+scoreBoardAux :: [PiecePosition] -> Board -> Int
+scoreBoardAux [] board = 0
+scoreBoardAux (x:xs) board = scorePiece (getPiece board x) + scoreBoardAux xs board
+
+scorePiece :: Piece -> Int
+scorePiece None = 0
+scorePiece (Piece White pieceType) = scorePieceType pieceType
+scorePiece (Piece Black pieceType) = (-scorePieceType pieceType)
+
+scorePieceType :: PieceType -> Int
+scorePieceType (Rook _) = 500
+scorePieceType Bishop = 300
+scorePieceType Queen = 900
+scorePieceType (King _) = 100000
+scorePieceType Knight = 300 -- Maybe change to make knight better than bishop
+scorePieceType (Pawn _) = 100
