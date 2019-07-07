@@ -1,4 +1,4 @@
-module Boards (getPiece, initialBoard, testBoard2, listAllMoves, chessMinimax, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
+module Boards (getPiece, initialBoard, listAllMoves, chessMinimax, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
 
 import Minimax
 
@@ -57,7 +57,7 @@ initialBoard::Board
 --         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
 --         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None
 --         ]
-initialBoard = Board White False False [
+initialBoard = Board White False False 0 [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False), Sentinel                ,
@@ -119,7 +119,7 @@ oppositeColor Black = White
 
 listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> BoardWithMovement
 listBoardsWithMovement oldPosition (Board color b1 b2 oldScore pieces) newPosition =
-    let piece = getPieceFromPieces pieces newPosition in
+    let piece = pieces !! (getIndex newPosition) in
     let newScore = oldScore - (scorePiece piece) in
     (Board (oppositeColor color) b1 b2 newScore (listBoardsWithMovementAux 0 oldPosition pieces newPosition piece), oldPosition, newPosition)
 
@@ -202,16 +202,10 @@ moveTypeOnlyTakeAllowed myColor board index = case (getPiece board index) of
 
 
 getPiece::Board -> PiecePosition -> Piece
-<<<<<<< HEAD
-getPiece (Board _ _ _ _ pieces) piecePosition = getPieceFromPieces pieces piecePosition
-getPieceFromPieces:: [Piece] -> PiecePosition -> Piece
-getPieceFromPieces pieces (PiecePosition posX posY)  = pieces !! (posX * 8 + posY)
-=======
 getPiece board piecePosition = getPieceByIndex board (getIndex piecePosition)
 
 getPieceByIndex::Board -> Int -> Piece
-getPieceByIndex (Board _ _ _ pieces) idx = pieces !! idx
->>>>>>> 10x12 matrix
+getPieceByIndex (Board _ _ _ _ pieces) idx = pieces !! idx
 
 listAllMoves::Board -> [BoardWithMovement]
 listAllMoves board = iterateAllPositions allPositions board
@@ -233,7 +227,7 @@ getColor::Board -> Color
 getColor (Board c _ _ _ _) = c
 
 listAllBoards :: Board -> [Board]
-listAllBoards board = map (\(x, _, _) -> x) (listAllMoves board)
+listAllBoards board = map (\(x, _, _) -> x) (iterateAllPositions allPositions board)
 
 scoreBoard :: Board -> Int
 scoreBoard (Board _ _ _ score _) = score
@@ -241,9 +235,9 @@ scoreBoard (Board _ _ _ score _) = score
 scoreFullBoard :: Board -> Int
 scoreFullBoard board = scoreFullBoardAux allPositions board
 
-scoreFullBoardAux :: [PiecePosition] -> Board -> Int
+scoreFullBoardAux :: [Int] -> Board -> Int
 scoreFullBoardAux [] board = 0
-scoreFullBoardAux (x:xs) board = scorePiece (getPiece board x) + scoreFullBoardAux xs board
+scoreFullBoardAux (x:xs) board = scorePiece (getPieceByIndex board x) + scoreFullBoardAux xs board
 
 scorePiece :: Piece -> Int
 scorePiece None = 0

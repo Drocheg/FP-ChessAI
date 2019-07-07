@@ -6,9 +6,9 @@ printBoard b = printRow 0 b ++ " \t A\t B\t C\t D\t E\t F\t G\t H\n"
 
 printRow::Int -> Board -> String
 printRow 12 board = printHeader board
-printRow idx (Board a b c x) = printRow (idx + 1) (Board a b c (drop 10 x)) ++ show (idx + 1) ++ "\t" ++  printSquares (take 10 x) ++ "\n"
+printRow idx (Board a b c d x) = printRow (idx + 1) (Board a b c d (drop 10 x)) ++ show (idx + 1) ++ "\t" ++  printSquares (take 10 x) ++ "\n"
 
-printHeader (Board turn castleWhite castleBlack _) = printTurn turn
+printHeader (Board turn castleWhite castleBlack _ _) = printTurn turn
 
 printTurn::Color -> String
 printTurn White = "White turn \n"
