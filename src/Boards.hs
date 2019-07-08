@@ -133,12 +133,20 @@ listBoardsWithMovement oldPosition (Board color b1 b2 oldScore pieces) newPositi
 listBoardsWithMovementAux :: Int -> PiecePosition -> [Piece] -> PiecePosition -> Piece -> [Piece]
 listBoardsWithMovementAux 120 _ _ _ _ = []
 listBoardsWithMovementAux index oldPosition (p:px) newPosition piece =
-    if (getIndex newPosition) == index then piece:(listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
-    else if (getIndex oldPosition) == index then None:(listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
-    else p:(listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
+    in let currentPiece = if (getIndex newPosition) == index then piece
+                          else if (getIndex oldPosition) == index then None
+                          else p
+    in let restOfPieces = (listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
+    in currentPiece:restOfPieces
 
 getIndex :: PiecePosition -> Int
-getIndex (PiecePosition x y) = (x + 2) * 10 + (y + 1)
+getIndex (PiecePosition x y) = convertXYto10x12 x y
+
+convert8x8to10x12 :: Int -> Int
+convert8x8to10x12 index = convertXYto10x12 (index `div` 8) (index `mod` 8)
+
+convertXYto10x12 :: Int -> Int -> Int
+convertXYto10x12 x y = (x + 2) * 10 + (y + 1)
 
 getPiecePosition :: Int -> PiecePosition
 getPiecePosition idx = PiecePosition ((idx `div` 10) - 2) ((idx `mod` 10) - 1)
@@ -217,7 +225,7 @@ getPieceByIndex (Board _ _ _ _ pieces) idx = pieces !! idx
 listAllMoves::Board -> [BoardWithMovement]
 listAllMoves board = iterateAllPositions allPositions board
 
-allPositions = [0..119]
+allPositions = map convert8x8to10x12 [0..63]
 iterateAllPositions:: [Int] -> Board -> [BoardWithMovement]
 iterateAllPositions [] board = []
 iterateAllPositions (x:xs) board = (case (checkPiece (getColor board) (getPieceByIndex board x)) of
