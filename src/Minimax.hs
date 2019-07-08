@@ -1,12 +1,12 @@
 module Minimax
     ( MovePath (MovePath),
       minimaxAlphaBeta,
+      minimaxAlphaBetaWithInfo,
     ) where
 
 
 data MovePath a = MovePath { pathScore::Int,
                              nodesExplored::Int,
-                             scoreSeen::[Int],
                              nodes::[a]
 } deriving(Show)
 
@@ -33,8 +33,8 @@ minimax :: a -> TreeInfo a -> Int -> AlphaBeta -> MovePath a -- Tree, treeInfo, 
 minimax node treeInfo indexM ab = minimaxAux node ((nextNodesF treeInfo) node) treeInfo indexM ab
 
 minimaxAux :: a -> [a] -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
-minimaxAux node (r:rs) (TreeInfo scoreF _ 0 _) indexM ab = MovePath (scoreF node) 0 [(scoreF node)] []
-minimaxAux node [] (TreeInfo scoreF _ _ _) indexM ab = MovePath (scoreF node) 0 [(scoreF node)] []
+minimaxAux node (r:rs) (TreeInfo scoreF _ 0 _) indexM ab = MovePath (scoreF node) 0 []
+minimaxAux node [] (TreeInfo scoreF _ _ _) indexM ab = MovePath (scoreF node) 0 []
 minimaxAux node (r:rs) treeInfo indexM ab = minimaxHorizontal (nextLevelMinimax r treeInfo 0 ab) rs treeInfo 1 ab
 
 minimaxHorizontal :: MovePath a -> [a] -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
@@ -59,8 +59,8 @@ nextLevelMinimax :: a -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
 nextLevelMinimax node (TreeInfo scoreF nextNodesF level isMax) indexM ab = appendNode (minimax node (TreeInfo scoreF nextNodesF (level-1) (not isMax)) indexM ab) node
 
 appendNode :: MovePath a -> a -> MovePath a
-appendNode (MovePath score nExplored scoreSeen nodes) node = MovePath score (nExplored + 1) scoreSeen (node:nodes)
+appendNode (MovePath score nExplored nodes) node = MovePath score (nExplored + 1) (node:nodes)
 
 bestMove :: Bool -> MovePath a -> MovePath a -> MovePath a
-bestMove isMax (MovePath score1 nExplored1 scoreSeen1 ndx1) (MovePath score2 nExplored2 scoreSeen2 ndx2) = let comp = if isMax then (score1 >= score2) else (score1 <= score2) in -- >= and <= because in case of tie we don't want to change
-    if comp then (MovePath score1 (nExplored1 + nExplored2) (scoreSeen1++scoreSeen2) ndx1) else (MovePath score2 (nExplored1 + nExplored2) (scoreSeen1++scoreSeen2) ndx2)
+bestMove isMax (MovePath score1 nExplored1 ndx1) (MovePath score2 nExplored2 ndx2) = let comp = if isMax then (score1 >= score2) else (score1 <= score2) in -- >= and <= because in case of tie we don't want to change
+    if comp then (MovePath score1 (nExplored1 + nExplored2) ndx1) else (MovePath score2 (nExplored1 + nExplored2) ndx2)
