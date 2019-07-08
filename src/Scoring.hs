@@ -40,6 +40,7 @@ scorePiecePosition index (King _) = kingPositions ! index
 scorePiecePosition index Knight   = knightPositions ! index
 scorePiecePosition index (Pawn _) = pawnPositions ! index
 
+
 rookPositions = (listArray (0, 119) [
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),

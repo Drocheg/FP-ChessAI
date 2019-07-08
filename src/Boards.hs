@@ -228,8 +228,11 @@ chessMinimax deepness board = minimaxAlphaBeta scoreBoard listAllBoards (-100000
 chessMinimaxWithInfo :: Int -> Board -> MovePath Board
 chessMinimaxWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard listAllBoards (-1000000) 1000000 deepness ((getColor board) == White) board
 
-chessMinimaxSorted :: Int -> Board -> MovePath Board
-chessMinimaxSorted deepness board = minimaxAlphaBetaWithInfo scoreBoard listAllBoardsSorted (-1000000) 1000000 deepness ((getColor board) == White) board
+chessMinimaxSorted :: Int -> Board -> Board
+chessMinimaxSorted deepness board = minimaxAlphaBeta scoreBoard listAllBoardsSorted (-1000000) 1000000 deepness ((getColor board) == White) board
+
+chessMinimaxSortedWithInfo :: Int -> Board -> MovePath Board
+chessMinimaxSortedWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard listAllBoardsSorted (-1000000) 1000000 deepness ((getColor board) == White) board
 
 chessMinimaxDeep4 :: Board -> Board
 chessMinimaxDeep4 board = chessMinimax 4 board
