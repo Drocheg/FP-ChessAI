@@ -7,7 +7,7 @@ import BoardDataTypes
 import Data.Array
 
 scoreBoard :: Board -> Int
-scoreBoard (Board _ _ _ score _) = score
+scoreBoard board = _score board
 
 --scoreFullBoard :: Board -> Int
 --scoreFullBoard board = scoreFullBoardAux allPositions board
