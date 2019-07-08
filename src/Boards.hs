@@ -3,19 +3,8 @@ module Boards (getPiece, initialBoard, listAllMoves, chessMinimax, Board (Board)
 import Data.List
 import Data.Ord
 import Minimax
-
-data Color = Black | White  deriving (Show, Eq)
-data PieceType = Pawn Bool 
-  | Rook Bool
-  | King Bool
-  | Knight
-  | Queen
-  | Bishop deriving (Show)
-
--- Sentinel --> Invalid board position, useful to simplify bounds checking 
-data Piece = Sentinel | None | Piece Color PieceType deriving (Show)
--- Board <CurrentTurn> <WhiteCastled> <BlackCastled>
-data Board = Board Color Bool Bool Int [Piece] deriving (Show)
+import Scoring
+import BoardDataTypes
 
 data MoveType = InvalidMove | TakeMove | SimpleMove
 data PiecePosition = PiecePosition {
@@ -133,7 +122,7 @@ listBoardsWithMovement oldPosition (Board color b1 b2 oldScore pieces) newPositi
 listBoardsWithMovementAux :: Int -> PiecePosition -> [Piece] -> PiecePosition -> Piece -> [Piece]
 listBoardsWithMovementAux 120 _ _ _ _ = []
 listBoardsWithMovementAux index oldPosition (p:px) newPosition piece =
-    in let currentPiece = if (getIndex newPosition) == index then piece
+    let currentPiece = if (getIndex newPosition) == index then piece
                           else if (getIndex oldPosition) == index then None
                           else p
     in let restOfPieces = (listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
@@ -249,28 +238,6 @@ listAllBoardsSorted board = let sortF = if (getColor board) == White then (\b1 b
                                                                      else (\b1 b2 ->  compare (scoreBoard b1) (scoreBoard b2))
                                         in sortBy sortF (listAllBoards board)
 
-scoreBoard :: Board -> Int
-scoreBoard (Board _ _ _ score _) = score
-
-scoreFullBoard :: Board -> Int
-scoreFullBoard board = scoreFullBoardAux allPositions board
-
-scoreFullBoardAux :: [Int] -> Board -> Int
-scoreFullBoardAux [] board = 0
-scoreFullBoardAux (x:xs) board = scorePiece (getPieceByIndex board x) + scoreFullBoardAux xs board
-
-scorePiece :: Piece -> Int
-scorePiece None = 0
-scorePiece (Piece White pieceType) = scorePieceType pieceType
-scorePiece (Piece Black pieceType) = (-scorePieceType pieceType)
-
-scorePieceType :: PieceType -> Int
-scorePieceType (Rook _) = 500
-scorePieceType Bishop = 300
-scorePieceType Queen = 900
-scorePieceType (King _) = 100000
-scorePieceType Knight = 300 -- Maybe change to make knight better than bishop
-scorePieceType (Pawn _) = 100
 
 chessMinimax :: Int -> Board -> Board
 chessMinimax deepness board = minimaxAlphaBeta scoreBoard listAllBoards (-1000000) 1000000 deepness ((getColor board) == White) board
