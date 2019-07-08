@@ -1,12 +1,16 @@
 module UI (printBoard, printPossibleMoves) where
 import Boards 
 import Data.Char
+import Data.Array
 
-printBoard b = printRow 0 b ++ " \t A\t B\t C\t D\t E\t F\t G\t H\n"
+printBoard b = printRows b ++ " \t A\t B\t C\t D\t E\t F\t G\t H\n"
 
-printRow::Int -> Board -> String
-printRow 12 board = printHeader board
-printRow idx (Board a b c d x) = printRow (idx + 1) (Board a b c d (drop 10 x)) ++ show (idx + 1) ++ "\t" ++  printSquares (take 10 x) ++ "\n"
+printRows:: Board -> String
+printRows b = printRows' b 0 (elems (getPieces b))
+
+printRows'::Board -> Int -> [Piece] -> String
+printRows' b 12  pieces = printHeader b
+printRows' b idx x      = printRows' b (idx + 1) (drop 10 x) ++ show (idx + 1) ++ "\t" ++  printSquares (take 10 x) ++ "\n"
 
 printHeader (Board turn castleWhite castleBlack _ _) = printTurn turn
 
