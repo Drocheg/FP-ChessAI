@@ -237,7 +237,9 @@ listAllBoards :: Board -> [Board]
 listAllBoards board = map (\(x, _, _) -> x) (iterateAllPositions allPositions board)
 
 listAllBoardsSorted :: Board -> [Board]
-listAllBoardsSorted board = sortBy (\b1 b2 ->  compare (scoreBoard b2) (scoreBoard b1)) (listAllBoards board)
+listAllBoardsSorted board = let sortF = if (getColor board) == White then (\b1 b2 ->  compare (scoreBoard b2) (scoreBoard b1))
+                                                                     else (\b1 b2 ->  compare (scoreBoard b1) (scoreBoard b2))
+                                        in sortBy sortF (listAllBoards board)
 
 scoreBoard :: Board -> Int
 scoreBoard (Board _ _ _ score _) = score
