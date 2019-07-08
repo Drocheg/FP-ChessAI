@@ -12,5 +12,7 @@ gameTick board = do
   putStrLn (printPossibleMoves  0 board boards)
   option <- getLine
   let (board, _, _) = boards!!(read option)
-  gameTick board
+  putStrLn (printBoard board)
+  let aIboard = chessMinimaxSorted 4 board
+  gameTick aIboard
 

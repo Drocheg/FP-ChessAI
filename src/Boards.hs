@@ -1,4 +1,4 @@
-module Boards (getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
+module Boards (getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, chessMinimaxSorted, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
 
 import Data.List
 import Data.Ord
