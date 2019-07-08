@@ -17,7 +17,7 @@ scoreBoard (Board _ _ _ score _) = score
 
 scorePiece :: PiecePosition -> Piece -> Int
 scorePiece _ None = 0
-scorePiece (PiecePosition x y) (Piece White pieceType) = scorePieceTypeAndPosition (PiecePosition (11-x) y) pieceType
+scorePiece (PiecePosition x y) (Piece White pieceType) = scorePieceTypeAndPosition (PiecePosition (7-x) y) pieceType
 scorePiece piecePosition (Piece Black pieceType) = (-scorePieceTypeAndPosition piecePosition pieceType)
 
 scorePieceTypeAndPosition :: PiecePosition -> PieceType -> Int
