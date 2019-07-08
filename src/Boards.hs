@@ -7,10 +7,6 @@ import Scoring
 import BoardDataTypes
 
 data MoveType = InvalidMove | TakeMove | SimpleMove
-data PiecePosition = PiecePosition {
-  x::Int,
-  y::Int
-} deriving (Show, Eq)
 
 type BoardWithMovement = (Board, PiecePosition, PiecePosition)
 
@@ -116,7 +112,7 @@ listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> BoardWithMo
 listBoardsWithMovement oldPosition (Board color b1 b2 oldScore pieces) newPosition =
     let movingPiece = pieces !! (getIndex oldPosition) in
     let takenPiece = pieces !! (getIndex newPosition) in
-    let newScore = oldScore - (scorePiece takenPiece) in
+    let newScore = oldScore - (scorePiece newPosition takenPiece) + (scorePiece newPosition movingPiece) - (scorePiece oldPosition movingPiece) in
     (Board (oppositeColor color) b1 b2 newScore (listBoardsWithMovementAux 0 oldPosition pieces newPosition movingPiece), oldPosition, newPosition)
 
 listBoardsWithMovementAux :: Int -> PiecePosition -> [Piece] -> PiecePosition -> Piece -> [Piece]
@@ -127,15 +123,6 @@ listBoardsWithMovementAux index oldPosition (p:px) newPosition piece =
                           else p
     in let restOfPieces = (listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
     in currentPiece:restOfPieces
-
-getIndex :: PiecePosition -> Int
-getIndex (PiecePosition x y) = convertXYto10x12 x y
-
-convert8x8to10x12 :: Int -> Int
-convert8x8to10x12 index = convertXYto10x12 (index `div` 8) (index `mod` 8)
-
-convertXYto10x12 :: Int -> Int -> Int
-convertXYto10x12 x y = (x + 2) * 10 + (y + 1)
 
 getPiecePosition :: Int -> PiecePosition
 getPiecePosition idx = PiecePosition ((idx `div` 10) - 2) ((idx `mod` 10) - 1)
@@ -231,7 +218,7 @@ getColor::Board -> Color
 getColor (Board c _ _ _ _) = c
 
 listAllBoards :: Board -> [Board]
-listAllBoards board = map (\(x, _, _) -> x) (iterateAllPositions allPositions board)
+listAllBoards board = map (\(x, _, _) -> x) (listAllMoves board)
 
 listAllBoardsSorted :: Board -> [Board]
 listAllBoardsSorted board = let sortF = if (getColor board) == White then (\b1 b2 ->  compare (scoreBoard b2) (scoreBoard b1))
