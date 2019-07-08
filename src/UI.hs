@@ -1,4 +1,5 @@
 module UI (printBoard, printPossibleMoves) where
+import BoardDataTypes
 import Boards 
 import Data.Char
 import Data.Array
@@ -12,7 +13,8 @@ printRows'::Board -> Int -> [Piece] -> String
 printRows' b 12  pieces = printHeader b
 printRows' b idx x      = printRows' b (idx + 1) (drop 10 x) ++ show (idx + 1) ++ "\t" ++  printSquares (take 10 x) ++ "\n"
 
-printHeader (Board turn castleWhite castleBlack _ _) = printTurn turn
+printHeader::Board -> String
+printHeader board = printTurn $ _color board
 
 printTurn::Color -> String
 printTurn White = "White turn \n"

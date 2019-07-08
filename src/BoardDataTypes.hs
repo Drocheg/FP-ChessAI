@@ -26,6 +26,15 @@ data PiecePosition = PiecePosition {
 -- Sentinel --> Invalid board position, useful to simplify bounds checking
 data Piece = Sentinel | None | Piece Color PieceType deriving (Show)
 type PieceArray = Array Int Piece 
+data WinState = WhiteWins | BlackWins | Draw deriving (Show)
+data Board = Board {
+  _color::Color,
+  _winState::Maybe WinState,
+  _whitePieces::[PiecePosition],
+  _blackPieces::[PiecePosition],
+  _score::Int,
+  _pieces::PieceArray
+} deriving (Show)
 
 getIndex :: PiecePosition -> Int
 getIndex (PiecePosition x y) = convertXYto10x12 x y
@@ -36,4 +45,3 @@ convert8x8to10x12 index = convertXYto10x12 (index `div` 8) (index `mod` 8)
 convertXYto10x12 :: Int -> Int -> Int
 convertXYto10x12 x y = (x + 2) * 10 + (y + 1)
 
-data Board = Board Color Bool Bool Int PieceArray deriving (Show)

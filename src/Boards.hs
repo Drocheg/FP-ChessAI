@@ -46,7 +46,13 @@ initialBoard::Board
 --         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
 --         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None
 --         ]
-initialBoard = Board White False False 0 (listArray (0, 119) [
+initialBoard = Board {
+  _color = White,
+  _winState = Nothing,
+  _whitePieces = [],
+  _blackPieces = [],
+  _score = 0,
+  _pieces = (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False), Sentinel                ,
@@ -60,8 +66,15 @@ initialBoard = Board White False False 0 (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                
         ])
+}
 
-testBoard2 = Board White False False 0 (listArray (0, 119) [
+testBoard2 = Board {
+  _color = White,
+  _winState = Nothing,
+  _whitePieces = [],
+  _blackPieces = [],
+  _score = 0,
+  _pieces = (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False), Sentinel                ,
@@ -75,9 +88,10 @@ testBoard2 = Board White False False 0 (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel
         ])
+}
             
 getPieces::Board -> PieceArray
-getPieces (Board _ _ _ _ pieces) = pieces;
+getPieces board = _pieces board;
 
 move:: Int -> Int -> PiecePosition -> PiecePosition
 move movX movY (PiecePosition posX posY) = PiecePosition (posX + movX) (posY + movY)
@@ -111,11 +125,19 @@ oppositeColor White = Black
 oppositeColor Black = White
 
 listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> BoardWithMovement
-listBoardsWithMovement oldPosition (Board color b1 b2 oldScore pieces) newPosition =
-    let movingPiece = pieces ! (getIndex oldPosition) in
-    let takenPiece = pieces ! (getIndex newPosition) in
-    let newScore = oldScore - (scorePiece newPosition takenPiece) + (scorePiece newPosition movingPiece) - (scorePiece oldPosition movingPiece) in
-    (Board (oppositeColor color) b1 b2 newScore (listBoardsWithMovementAux oldPosition pieces newPosition movingPiece), oldPosition, newPosition)
+listBoardsWithMovement oldPosition board newPosition =
+    let pieces = _pieces board;
+        movingPiece = pieces ! (getIndex oldPosition);
+        takenPiece = pieces ! (getIndex newPosition);
+        newScore = _score board - (scorePiece newPosition takenPiece) + (scorePiece newPosition movingPiece) - (scorePiece oldPosition movingPiece) in
+    (Board {
+      _color = oppositeColor $ _color board,
+      _winState = _winState board,
+      _whitePieces = _whitePieces board,
+      _blackPieces = _blackPieces board,
+      _score = newScore,
+      _pieces = listBoardsWithMovementAux oldPosition pieces newPosition movingPiece 
+    }, oldPosition, newPosition)
 
 listBoardsWithMovementAux :: PiecePosition -> PieceArray -> PiecePosition -> Piece -> PieceArray
 listBoardsWithMovementAux oldPosition boardArray newPosition piece = boardArray // [((getIndex oldPosition), None), ((getIndex newPosition), piece)]
@@ -192,7 +214,7 @@ getPiece::Board -> PiecePosition -> Piece
 getPiece board piecePosition = getPieceByIndex board (getIndex piecePosition)
 
 getPieceByIndex::Board -> Int -> Piece
-getPieceByIndex (Board _ _ _ _ pieces) idx = pieces ! idx
+getPieceByIndex board idx = (_pieces board) ! idx
 
 listAllMoves::Board -> [BoardWithMovement]
 listAllMoves board = iterateAllPositions allPositions board
@@ -211,7 +233,7 @@ checkPiece _ Sentinel = False
 checkPiece playerColor (Piece pieceColor _) = pieceColor == playerColor
 
 getColor::Board -> Color
-getColor (Board c _ _ _ _) = c
+getColor board = _color board
 
 listAllBoards :: Board -> [Board]
 listAllBoards board = map (\(x, _, _) -> x) (listAllMoves board)
