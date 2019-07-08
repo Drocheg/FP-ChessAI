@@ -1,7 +1,8 @@
-module Boards (getPiece, initialBoard, listAllMoves, chessMinimax, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
+module Boards (getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
 
 import Data.List
 import Data.Ord
+import Data.Array
 import Minimax
 import Scoring
 import BoardDataTypes
@@ -49,7 +50,7 @@ initialBoard::Board
 --         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
 --         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None
 --         ]
-initialBoard = Board White False False 0 [
+initialBoard = Board White False False 0 (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False), Sentinel                ,
@@ -62,9 +63,9 @@ initialBoard = Board White False False 0 [
         Sentinel                , Piece Black (Rook False), Piece Black (Knight    ), Piece Black (Bishop    ), Piece Black (Queen     ), Piece Black (King False), Piece Black (Bishop    ), Piece Black (Knight    ), Piece Black (Rook False), Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                
-        ]
+        ])
 
-testBoard2 = Board White False False 0 [
+testBoard2 = Board White False False 0 (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False), Sentinel                ,
@@ -77,9 +78,10 @@ testBoard2 = Board White False False 0 [
         Sentinel                , Piece Black (Rook False), Piece Black (Knight    ), Piece Black (Bishop    ), Piece Black (Queen     ), Piece Black (King False), Piece Black (Bishop    ), Piece Black (Knight    ), Piece Black (Rook False), Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel
-        ]
+        ])
             
-
+getPieces::Board -> PieceArray
+getPieces (Board _ _ _ _ pieces) = pieces;
 
 move:: Int -> Int -> PiecePosition -> PiecePosition
 move movX movY (PiecePosition posX posY) = PiecePosition (posX + movX) (posY + movY)
@@ -114,19 +116,13 @@ oppositeColor Black = White
 
 listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> BoardWithMovement
 listBoardsWithMovement oldPosition (Board color b1 b2 oldScore pieces) newPosition =
-    let movingPiece = pieces !! (getIndex oldPosition) in
-    let takenPiece = pieces !! (getIndex newPosition) in
+    let movingPiece = pieces ! (getIndex oldPosition) in
+    let takenPiece = pieces ! (getIndex newPosition) in
     let newScore = oldScore - (scorePiece takenPiece) in
-    (Board (oppositeColor color) b1 b2 newScore (listBoardsWithMovementAux 0 oldPosition pieces newPosition movingPiece), oldPosition, newPosition)
+    (Board (oppositeColor color) b1 b2 newScore (listBoardsWithMovementAux oldPosition pieces newPosition movingPiece), oldPosition, newPosition)
 
-listBoardsWithMovementAux :: Int -> PiecePosition -> [Piece] -> PiecePosition -> Piece -> [Piece]
-listBoardsWithMovementAux 120 _ _ _ _ = []
-listBoardsWithMovementAux index oldPosition (p:px) newPosition piece =
-    let currentPiece = if (getIndex newPosition) == index then piece
-                          else if (getIndex oldPosition) == index then None
-                          else p
-    in let restOfPieces = (listBoardsWithMovementAux (index+1) oldPosition px newPosition piece)
-    in currentPiece:restOfPieces
+listBoardsWithMovementAux :: PiecePosition -> PieceArray -> PiecePosition -> Piece -> PieceArray
+listBoardsWithMovementAux oldPosition boardArray newPosition piece = boardArray // [((getIndex oldPosition), None), ((getIndex newPosition), piece)]
 
 getIndex :: PiecePosition -> Int
 getIndex (PiecePosition x y) = convertXYto10x12 x y
@@ -209,7 +205,7 @@ getPiece::Board -> PiecePosition -> Piece
 getPiece board piecePosition = getPieceByIndex board (getIndex piecePosition)
 
 getPieceByIndex::Board -> Int -> Piece
-getPieceByIndex (Board _ _ _ _ pieces) idx = pieces !! idx
+getPieceByIndex (Board _ _ _ _ pieces) idx = pieces ! idx
 
 listAllMoves::Board -> [BoardWithMovement]
 listAllMoves board = iterateAllPositions allPositions board
