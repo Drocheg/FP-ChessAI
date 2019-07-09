@@ -12,41 +12,8 @@ data MoveType = InvalidMove | TakeMove | SimpleMove
 type BoardWithMovement = (Board, PiecePosition, PiecePosition)
 
 initialBoard::Board
--- initialBoard = Board White False False 0 [
---         Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False),
---         Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), 
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), 
---         Piece Black (Rook False), Piece Black (Knight    ), Piece Black (Bishop    ), Piece Black (Queen     ), Piece Black (King False), Piece Black (Bishop    ), Piece Black (Knight    ), Piece Black (Rook False)
---         ]
 
--- testBoard::Board
--- testBoard = Board White False False 100 [
---         Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False),
---         Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), 
---         None                    , Piece White (Pawn False), None                    , None                    , None                    , None                    , None                    , None                    ,
---         None                    , Piece White (Pawn True)    , None                 , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                    , Piece Black (Pawn False), None                    , None                    , None                    , None                    , None                    ,
---         Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), 
---         Piece Black (Rook False), Piece Black (Knight    ), Piece Black (Bishop    ), Piece Black (Queen     ), Piece Black (King False), Piece Black (Bishop    ), Piece Black (Knight    ), Piece Black (Rook False)
---         ]
-
--- testBoard2::Board
--- testBoard2 = Board Black False False (-500) [
---         Piece White (King False), None                   , Piece Black (Rook False) , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         Piece Black (King False), None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None                    ,
---         None                    , None                   , None                     , None                    , None                    , None                    , None                    , None
---         ]
-initialBoard = Board {
+initialBoard2 = Board {
   _color = White,
   _winState = Nothing,
   _whitePieces = [],
@@ -55,14 +22,14 @@ initialBoard = Board {
   _pieces = (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
-        Sentinel                , Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False), Sentinel                ,
-        Sentinel                , Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Piece White (Pawn False), Sentinel                , 
+        Sentinel                , Piece White Rook False  , Piece White Knight False, Piece White Bishop False, Piece White Queen False , Piece White King False  , Piece White Bishop False, Piece White Knight False, Piece White Rook False  , Sentinel                ,
+        Sentinel                , Piece White Pawn False  , Piece White Pawn False  , Piece White Pawn False  , Piece White Pawn False  , Piece White Pawn False  , Piece White Pawn False  , Piece White Pawn False  , Piece White Pawn False  , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
-        Sentinel                , Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Piece Black (Pawn False), Sentinel                , 
-        Sentinel                , Piece Black (Rook False), Piece Black (Knight    ), Piece Black (Bishop    ), Piece Black (Queen     ), Piece Black (King False), Piece Black (Bishop    ), Piece Black (Knight    ), Piece Black (Rook False), Sentinel                ,
+        Sentinel                , Piece Black Pawn False  , Piece Black Pawn False  , Piece Black Pawn False  , Piece Black Pawn False  , Piece Black Pawn False  , Piece Black Pawn False  , Piece Black Pawn False  , Piece Black Pawn False  , Sentinel                ,
+        Sentinel                , Piece Black Rook False  , Piece Black Knight False, Piece Black Bishop False, Piece Black Queen False , Piece Black King False  , Piece Black Bishop False, Piece Black Knight False, Piece Black Rook False  , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                
         ])
@@ -77,14 +44,36 @@ testBoard2 = Board {
   _pieces = (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
-        Sentinel                , Piece White (Rook False), Piece White (Knight    ), Piece White (Bishop    ), Piece White (Queen     ), Piece White (King False), Piece White (Bishop    ), Piece White (Knight    ), Piece White (Rook False), Sentinel                ,
+        Sentinel                , Piece White Rook False  , Piece White Knight False, Piece White Bishop False, Piece White Queen False , Piece White King False  , Piece White Bishop False, Piece White Knight False, Piece White Rook False  , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
-        Sentinel                , Piece Black (Rook False), Piece Black (Knight    ), Piece Black (Bishop    ), Piece Black (Queen     ), Piece Black (King False), Piece Black (Bishop    ), Piece Black (Knight    ), Piece Black (Rook False), Sentinel                ,
+        Sentinel                , Piece Black Rook False  , Piece Black Knight False, Piece Black Bishop False, Piece Black Queen False , Piece Black King False  , Piece Black Bishop False, Piece Black Knight False, Piece Black Rook False  , Sentinel                ,
+        Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
+        Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel
+        ])
+}
+
+initialBoard = Board {
+  _color = Black,
+  _winState = Nothing,
+  _whitePieces = [],
+  _blackPieces = [],
+  _score = 0,
+  _pieces = (listArray (0, 119) [
+        Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
+        Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
+        Sentinel                , None                    , None                    , None                    , None                    , Piece White Bishop False, Piece White Bishop False, Piece White Bishop False, None                    , Sentinel                ,
+        Sentinel                , Piece Black Pawn False  , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
+        Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
+        Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
+        Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
+        Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
+        Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
+        Sentinel                , Piece Black Rook False  , None                    , None                    , None                    , Piece Black King False  , Piece Black Bishop False, Piece Black Knight False, Piece Black Rook False  , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel
         ])
@@ -128,16 +117,23 @@ listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> BoardWithMo
 listBoardsWithMovement oldPosition board newPosition =
     let pieces = _pieces board;
         movingPiece = pieces ! (getIndex oldPosition);
-        takenPiece = pieces ! (getIndex newPosition);
-        newScore = _score board - (scorePiece newPosition takenPiece) + (scorePiece newPosition movingPiece) - (scorePiece oldPosition movingPiece) in
+        movedPiece  = calculateMovedPiece newPosition movingPiece;
+        takenPiece  = pieces ! (getIndex newPosition);
+        newScore    = _score board - (scorePiece newPosition takenPiece) + (scorePiece newPosition movedPiece) - (scorePiece oldPosition movingPiece) in
     (Board {
       _color = oppositeColor $ _color board,
       _winState = _winState board,
       _whitePieces = _whitePieces board,
       _blackPieces = _blackPieces board,
       _score = newScore,
-      _pieces = listBoardsWithMovementAux oldPosition pieces newPosition movingPiece 
+      _pieces = listBoardsWithMovementAux oldPosition pieces newPosition movedPiece
     }, oldPosition, newPosition)
+
+calculateMovedPiece :: PiecePosition -> Piece -> Piece
+calculateMovedPiece (PiecePosition 0 _) (Piece color Pawn _) = (Piece color Queen True)
+calculateMovedPiece (PiecePosition 7 _) (Piece color Pawn _) = (Piece color Queen True)
+calculateMovedPiece _ (Piece color pieceType hasMoved) = (Piece color pieceType True)
+calculateMovedPiece _ None = None
 
 listBoardsWithMovementAux :: PiecePosition -> PieceArray -> PiecePosition -> Piece -> PieceArray
 listBoardsWithMovementAux oldPosition boardArray newPosition piece = boardArray // [((getIndex oldPosition), None), ((getIndex newPosition), piece)]
@@ -150,12 +146,12 @@ listMovePrev:: PiecePosition -> Board -> [PiecePosition]
 listMovePrev index board = listMoves index (getPiece board index) board 
 
 listMoves::PiecePosition -> Piece -> Board -> [PiecePosition]
-listMoves index (Piece color (Rook hasMoved)) board = listMoveUsingDirection True index [top, bottom, left, right] (moveType color board)
-listMoves index (Piece color Bishop) board = listMoveUsingDirection True index [topRight, leftTop, bottomLeft, rightBottom] (moveType color board)
-listMoves index (Piece color Queen) board = listMoveUsingDirection True index [top, bottom, left, right, topRight, leftTop, bottomLeft, rightBottom] (moveType color board)
-listMoves index (Piece color (King hasMoved)) board = listMoveUsingDirection False index [top, bottom, left, right, topRight, leftTop, bottomLeft, rightBottom] (moveType color board)
-listMoves index (Piece color Knight) board = listMoveUsingDirection False index [knightBottomLeft, knightBottomRight, knightLeftBottom, knightLeftTop, knightRightBottom, knightRightTop, knightTopLeft, knightTopRight] (moveType color board)
-listMoves index (Piece color (Pawn hasMoved)) board = listPawnMovement index color hasMoved board
+listMoves index (Piece color Rook hasMoved) board = listMoveUsingDirection True index [top, bottom, left, right] (moveType color board)
+listMoves index (Piece color Bishop hasMoved) board = listMoveUsingDirection True index [topRight, leftTop, bottomLeft, rightBottom] (moveType color board)
+listMoves index (Piece color Queen hasMoved) board = listMoveUsingDirection True index [top, bottom, left, right, topRight, leftTop, bottomLeft, rightBottom] (moveType color board)
+listMoves index (Piece color King hasMoved) board = listMoveUsingDirection False index [top, bottom, left, right, topRight, leftTop, bottomLeft, rightBottom] (moveType color board)
+listMoves index (Piece color Knight hasMoved) board = listMoveUsingDirection False index [knightBottomLeft, knightBottomRight, knightLeftBottom, knightLeftTop, knightRightBottom, knightRightTop, knightTopLeft, knightTopRight] (moveType color board)
+listMoves index (Piece color Pawn hasMoved) board = listPawnMovement index color hasMoved board
 
 listPawnMovement :: PiecePosition -> Color -> Bool -> Board -> [PiecePosition]
 listPawnMovement index color hasMoved board = (pawnFrontMove index color hasMoved board) ++ (listPawnTakeMovement index color board)
@@ -170,8 +166,8 @@ pawnFrontMove index color hasMoved board = let frontMovement = if color == White
                                            in pawnFrontMoveAux frontMovement moveTypeF hasMoved (listMoveNonRecursive index frontMovement moveTypeF)
 
 pawnFrontMoveAux :: (PiecePosition -> PiecePosition) -> (PiecePosition -> MoveType) -> Bool -> [PiecePosition] -> [PiecePosition]
-pawnFrontMoveAux _ _ True positions = positions
 pawnFrontMoveAux _ _ _ [] = []
+pawnFrontMoveAux _ _ True positions = positions
 pawnFrontMoveAux moveFunc moveTypeF hasMoved (pp:[]) = pp:(listMoveNonRecursive pp moveFunc moveTypeF)
 
 listMoveUsingDirection :: Bool -> PiecePosition -> [(PiecePosition -> PiecePosition)] -> (PiecePosition -> MoveType) -> [PiecePosition]
@@ -195,19 +191,19 @@ moveType::Color -> Board -> PiecePosition -> MoveType
 moveType myColor board index = case (getPiece board index) of
   None -> SimpleMove
   Sentinel -> InvalidMove
-  Piece otherColor pieceTypes -> if (otherColor == myColor) then InvalidMove else TakeMove
+  Piece otherColor pieceTypes _ -> if (otherColor == myColor) then InvalidMove else TakeMove
 
 moveTypeTakeNonAllowed:: Board -> PiecePosition -> MoveType
 moveTypeTakeNonAllowed board index = case (getPiece board index) of
   None -> SimpleMove
   Sentinel -> InvalidMove
-  Piece _ _ -> InvalidMove
+  Piece _ _ _ -> InvalidMove
 
 moveTypeOnlyTakeAllowed::Color -> Board -> PiecePosition -> MoveType
 moveTypeOnlyTakeAllowed myColor board index = case (getPiece board index) of
   None -> InvalidMove
   Sentinel -> InvalidMove
-  Piece otherColor pieceTypes -> if (otherColor == myColor) then InvalidMove else TakeMove
+  Piece otherColor pieceTypes _ -> if (otherColor == myColor) then InvalidMove else TakeMove
 
 
 getPiece::Board -> PiecePosition -> Piece
@@ -217,7 +213,42 @@ getPieceByIndex::Board -> Int -> Piece
 getPieceByIndex board idx = (_pieces board) ! idx
 
 listAllMoves::Board -> [BoardWithMovement]
-listAllMoves board = iterateAllPositions allPositions board
+listAllMoves board = (iterateAllPositions allPositions board) ++ (listCastlingBoards board)
+
+listCastlingBoards :: Board -> [BoardWithMovement]
+listCastlingBoards board = if getColor board == White then (listCastlingBoardsRow 0 board) else (listCastlingBoardsRow 7 board)
+
+listCastlingBoardsRow:: Int -> Board -> [BoardWithMovement]
+listCastlingBoardsRow row board = (castlingBoard row board 0 [1,2,3] 3 2) ++ (castlingBoard row board 7 [6,5] 5 6)
+
+castlingBoard :: Int -> Board -> Int -> [Int] -> Int -> Int -> [BoardWithMovement]
+castlingBoard row board rookCol emptyCols rookEndCol kingEndCol =
+    let rookStartPosition   = PiecePosition row rookCol
+        rookEndPosition     = PiecePosition row rookEndCol
+        kingStartPosition   = PiecePosition row 4
+        kingEndPosition     = PiecePosition row kingEndCol
+        rook                = getPiece board rookStartPosition;
+        king                = getPiece board kingStartPosition;
+        emptyPieces = map (\x -> getPieceByIndex board (convertXYto10x12 row x)) emptyCols in
+    if validCastling emptyPieces rook king
+    then let boardAfterRookMovement = swapBoardColor ((\(x, _, _) -> x) (listBoardsWithMovement rookStartPosition board rookEndPosition)) in
+         [listBoardsWithMovement kingStartPosition boardAfterRookMovement kingEndPosition]
+    else []
+
+validCastling :: [Piece] -> Piece -> Piece -> Bool
+validCastling emptyPieces (Piece _ Rook False) (Piece _ King False) = all (\x -> x == None) emptyPieces
+validCastling _ _ _ = False
+
+
+swapBoardColor :: Board -> Board
+swapBoardColor board = Board {
+                             _color = oppositeColor $ _color board,
+                             _winState = _winState board,
+                             _whitePieces = _whitePieces board,
+                             _blackPieces = _blackPieces board,
+                             _score = _score board,
+                             _pieces = _pieces board
+                           }
 
 allPositions = map convert8x8to10x12 [0..63]
 iterateAllPositions:: [Int] -> Board -> [BoardWithMovement]
@@ -230,7 +261,7 @@ iterateAllPositions (x:xs) board = (case (checkPiece (getColor board) (getPieceB
 checkPiece::Color -> Piece -> Bool
 checkPiece _ None = False
 checkPiece _ Sentinel = False
-checkPiece playerColor (Piece pieceColor _) = pieceColor == playerColor
+checkPiece playerColor (Piece pieceColor _ _) = pieceColor == playerColor
 
 getColor::Board -> Color
 getColor board = _color board

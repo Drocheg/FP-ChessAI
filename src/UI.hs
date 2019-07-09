@@ -22,17 +22,17 @@ printTurn Black = "Black turn \n"
 
 printSquares::[Piece] -> String
 printSquares [] = ""
-printSquares ((Piece c pt):xs) = printColorSquare c (printSquare pt) ++ "\t" ++ printSquares xs
+printSquares ((Piece c pt _):xs) = printColorSquare c (printSquare pt) ++ "\t" ++ printSquares xs
 printSquares (None:xs) = " x " ++ "\t" ++ printSquares xs
 printSquares (Sentinel:xs) = "" ++ printSquares xs
 
 printSquare::PieceType -> String
-printSquare (Rook _)    = "R"
+printSquare Rook        = "R"
 printSquare Knight      = "N"
 printSquare Bishop      = "B"
 printSquare Queen       = "Q"
-printSquare (King _)    = "K"
-printSquare (Pawn _)    = "P"
+printSquare King        = "K"
+printSquare Pawn        = "P"
 
 printColorSquare::Color -> String -> String
 printColorSquare White p = "[" ++ p ++ "]"
@@ -47,12 +47,12 @@ printMoves board (_, ogPos, newPos) = let ogPiece = getPiece board ogPos; newPie
   printNotation ogPiece ++ printPosNotation ogPos ++ " " ++ printNotation newPiece ++ printPosNotation newPos
 
 printNotation::Piece -> String
-printNotation (Piece _ (Rook _)) = "R"
-printNotation (Piece _ (King _)) = "K"
-printNotation (Piece _ (Pawn _)) = ""
-printNotation (Piece _ Knight) = "N"
-printNotation (Piece _ Queen)  = "Q"
-printNotation (Piece _ Bishop) = "B"
+printNotation (Piece _ Rook _)   = "R"
+printNotation (Piece _ King _)   = "K"
+printNotation (Piece _ Pawn _)   = ""
+printNotation (Piece _ Knight _) = "N"
+printNotation (Piece _ Queen _)  = "Q"
+printNotation (Piece _ Bishop _) = "B"
 printNotation (None)         = ""
 
 printPosNotation::PiecePosition -> String

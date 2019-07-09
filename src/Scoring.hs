@@ -18,27 +18,27 @@ scoreBoard board = _score board
 
 scorePiece :: PiecePosition -> Piece -> Int
 scorePiece _ None = 0
-scorePiece (PiecePosition x y) (Piece White pieceType) = scorePieceTypeAndPosition (PiecePosition (7-x) y) pieceType
-scorePiece piecePosition (Piece Black pieceType) = (-scorePieceTypeAndPosition piecePosition pieceType)
+scorePiece (PiecePosition x y) (Piece White pieceType _) = scorePieceTypeAndPosition (PiecePosition (7-x) y) pieceType
+scorePiece piecePosition (Piece Black pieceType _) = (-scorePieceTypeAndPosition piecePosition pieceType)
 
 scorePieceTypeAndPosition :: PiecePosition -> PieceType -> Int
 scorePieceTypeAndPosition piecePosition pieceType = scorePieceType pieceType + scorePiecePosition (getIndex piecePosition) pieceType
 
 scorePieceType :: PieceType -> Int
-scorePieceType (Rook _) = 500
-scorePieceType Bishop = 330
-scorePieceType Queen = 900
-scorePieceType (King _) = 20000
-scorePieceType Knight = 320
-scorePieceType (Pawn _) = 100
+scorePieceType Rook      = 500
+scorePieceType Bishop    = 330
+scorePieceType Queen     = 900
+scorePieceType King      = 20000
+scorePieceType Knight    = 320
+scorePieceType Pawn      = 100
 
 scorePiecePosition :: Int -> PieceType -> Int
-scorePiecePosition index (Rook _) = rookPositions ! index
-scorePiecePosition index Bishop   = bishopPositions ! index
-scorePiecePosition index Queen    = queenPositions ! index
-scorePiecePosition index (King _) = kingPositions ! index
-scorePiecePosition index Knight   = knightPositions ! index
-scorePiecePosition index (Pawn _) = pawnPositions ! index
+scorePiecePosition index Rook    = rookPositions ! index
+scorePiecePosition index Bishop  = bishopPositions ! index
+scorePiecePosition index Queen   = queenPositions ! index
+scorePiecePosition index King    = kingPositions ! index
+scorePiecePosition index Knight  = knightPositions ! index
+scorePiecePosition index Pawn    = pawnPositions ! index
 
 
 rookPositions = (listArray (0, 119) [
@@ -74,14 +74,14 @@ bishopPositions = (listArray (0, 119) [
 queenPositions = (listArray (0, 119) [
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
-                (-123), (-20),(-10),(-10), (-5), (-5),(-10),(-10),(-20), (-123),
-                (-123), (-10),  0,  0,  0,  0,  0,  0,(-10), (-123),
-                (-123), (-10),  0,  5,  5,  5,  5,  0,(-10), (-123),
-                (-123),  (-5),  0,  5,  5,  5,  5,  0, (-5), (-123),
-                (-123),     0,  0,  5,  5,  5,  5,  0, (-5), (-123),
-                (-123), (-10),  5,  5,  5,  5,  5,  0,(-10), (-123),
-                (-123), (-10),  0,  5,  0,  0,  0,  0,(-10), (-123),
-                (-123), (-20),(-10),(-10), (-5), (-5),(-10),(-10),(-20), (-123),
+                (-123),  (-20),  (-10),  (-10),   (-5),   (-5),  (-10),  (-10),  (-20), (-123),
+                (-123),  (-10),      0,      0,      0,      0,      0,      0,  (-10), (-123),
+                (-123),  (-10),      0,      5,      5,      5,      5,      0,  (-10), (-123),
+                (-123),   (-5),      0,      5,      5,      5,      5,      0,   (-5), (-123),
+                (-123),      0,      0,      5,      5,      5,      5,      0,   (-5), (-123),
+                (-123),  (-10),      5,      5,      5,      5,      5,      0,  (-10), (-123),
+                (-123),  (-10),      0,      5,      0,      0,      0,      0,  (-10), (-123),
+                (-123),  (-20),  (-10),  (-10),   (-5),   (-5),  (-10),  (-10),  (-20), (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123)
                 ])
@@ -89,14 +89,14 @@ queenPositions = (listArray (0, 119) [
 kingPositions = (listArray (0, 119) [
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
-                (-123), (-30),(-40),(-40),(-50),(-50),(-40),(-40),(-30), (-123),
-                (-123), (-30),(-40),(-40),(-50),(-50),(-40),(-40),(-30), (-123),
-                (-123), (-30),(-40),(-40),(-50),(-50),(-40),(-40),(-30), (-123),
-                (-123), (-30),(-40),(-40),(-50),(-50),(-40),(-40),(-30), (-123),
-                (-123), (-20),(-30),(-30),(-40),(-40),(-30),(-30),(-20), (-123),
-                (-123), (-10),(-20),(-20),(-20),(-20),(-20),(-20),(-10), (-123),
-                (-123),  20, 20,  0,  0,  0,  0, 20, 20, (-123),
-                (-123),  20, 30, 10,  0,  0, 10, 30, 20, (-123),
+                (-123),  (-30),  (-40),  (-40),  (-50),  (-50),  (-40),  (-40),  (-30), (-123),
+                (-123),  (-30),  (-40),  (-40),  (-50),  (-50),  (-40),  (-40),  (-30), (-123),
+                (-123),  (-30),  (-40),  (-40),  (-50),  (-50),  (-40),  (-40),  (-30), (-123),
+                (-123),  (-30),  (-40),  (-40),  (-50),  (-50),  (-40),  (-40),  (-30), (-123),
+                (-123),  (-20),  (-30),  (-30),  (-40),  (-40),  (-30),  (-30),  (-20), (-123),
+                (-123),  (-10),  (-20),  (-20),  (-20),  (-20),  (-20),  (-20),  (-10), (-123),
+                (-123),     20,     20,      0,      0,      0,      0,     20,     20, (-123),
+                (-123),     20,     30,     10,      0,      0,     10,     30,     20, (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123)
                 ])
@@ -104,14 +104,14 @@ kingPositions = (listArray (0, 119) [
 knightPositions = (listArray (0, 119) [
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
-                (-123), (-50),(-40),(-30),(-30),(-30),(-30),(-40),(-50), (-123),
-                (-123), (-40),(-20),  0,  0,  0,  0,(-20),(-40), (-123),
-                (-123), (-30),  0, 10, 15, 15, 10,  0,(-30), (-123),
-                (-123), (-30),  5, 15, 20, 20, 15,  5,(-30), (-123),
-                (-123), (-30),  0, 15, 20, 20, 15,  0,(-30), (-123),
-                (-123), (-30),  5, 10, 15, 15, 10,  5,(-30), (-123),
-                (-123), (-40),(-20),  0,  5,  5,  0,(-20),(-40), (-123),
-                (-123), (-50),(-40),(-30),(-30),(-30),(-30),(-40),(-50), (-123),
+                (-123),  (-50),  (-40),  (-30),  (-30),  (-30),  (-30),  (-40),  (-50), (-123),
+                (-123),  (-40),  (-20),      0,      0,      0,      0,  (-20),  (-40), (-123),
+                (-123),  (-30),      0,     10,     15,     15,     10,      0,  (-30), (-123),
+                (-123),  (-30),      5,     15,     20,     20,     15,      5,  (-30), (-123),
+                (-123),  (-30),      0,     15,     20,     20,     15,      0,  (-30), (-123),
+                (-123),  (-30),      5,     10,     15,     15,     10,      5,  (-30), (-123),
+                (-123),  (-40),  (-20),      0,      5,      5,      0,  (-20),  (-40), (-123),
+                (-123),  (-50),  (-40),  (-30),  (-30),  (-30),  (-30),  (-40),  (-50), (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123),
                 (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123), (-123)
                 ])
