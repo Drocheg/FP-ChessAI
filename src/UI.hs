@@ -4,14 +4,18 @@ import Boards
 import Data.Char
 import Data.Array
 
-printBoard b = printRows b ++ " \t A\t B\t C\t D\t E\t F\t G\t H\n"
+printBoard b = printRows b ++ " \t A\t B\t C\t D\t E\t F\t G\t H\n"  ++ printCheckStatus b ++ "\n"
+
+printCheckStatus b = case (isKingBeingChecked (flipColor b)) of 
+  True -> "King is Being Checked"
+  False -> "King is not being Checked"
 
 printRows:: Board -> String
 printRows b = printRows' b 0 (elems (getPieces b))
 
 printRows'::Board -> Int -> [Piece] -> String
 printRows' b 12  pieces = printHeader b
-printRows' b idx x      = printRows' b (idx + 1) (drop 10 x) ++ show (idx + 1) ++ "\t" ++  printSquares (take 10 x) ++ "\n"
+printRows' b idx x      = printRows' b (idx + 1) (drop 10 x) ++ show (idx + 1 - 2) ++ "\t" ++  printSquares (take 10 x) ++ "\n"
 
 printHeader::Board -> String
 printHeader board = printTurn $ _color board

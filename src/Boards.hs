@@ -1,4 +1,4 @@
-module Boards (getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, chessMinimaxSorted, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
+module Boards (flipColor, isKingBeingChecked, getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, chessMinimaxSorted, Board (Board), PieceType (..), Color (..), Piece (..), PiecePosition (..), BoardWithMovement (..) ) where
 
 import Data.List
 import Data.Ord
@@ -6,6 +6,7 @@ import Data.Array
 import Minimax
 import Scoring
 import BoardDataTypes
+import Data.Maybe
 
 data MoveType = InvalidMove | TakeMove | SimpleMove
 
@@ -13,7 +14,7 @@ type BoardWithMovement = (Board, PiecePosition, PiecePosition)
 
 initialBoard::Board
 
-initialBoard2 = Board {
+initialBoard = Board {
   _color = White,
   _winState = Nothing,
   _whitePieces = [],
@@ -57,7 +58,7 @@ testBoard2 = Board {
         ])
 }
 
-initialBoard = Board {
+testBoard3 = Board {
   _color = Black,
   _winState = Nothing,
   _whitePieces = [],
@@ -103,11 +104,10 @@ knightLeftTop = move 1 (-2)
 knightLeftBottom = move (-1) (-2)
 
 listBoards :: PiecePosition -> Board -> [BoardWithMovement]
-listBoards piecePosition board = listBoardsAux piecePosition board (listMovePrev piecePosition board)
+listBoards piecePosition board = filter (not.isKingBeingChecked.(\(x,_,_) -> x)) (listBoardsAux piecePosition board)
 
-listBoardsAux :: PiecePosition -> Board -> [PiecePosition] -> [BoardWithMovement]
-listBoardsAux piecePosition board [] = []
-listBoardsAux piecePosition board (m:mx) = (listBoardsWithMovement piecePosition board m):(listBoardsAux piecePosition board mx)
+listBoardsAux :: PiecePosition -> Board -> [BoardWithMovement]
+listBoardsAux piecePosition board = (map (listBoardsWithMovement piecePosition board) (listMoves piecePosition (getPiece board piecePosition) board)) ++ (listCastlingBoards board)
 
 oppositeColor::Color->Color
 oppositeColor White = Black
@@ -142,9 +142,8 @@ getPiecePosition :: Int -> PiecePosition
 getPiecePosition idx = PiecePosition ((idx `div` 10) - 2) ((idx `mod` 10) - 1)
 --  0  0  -> 2 1 -> 21
 -- -1 -1  -> 1 0 -> 10
-listMovePrev:: PiecePosition -> Board -> [PiecePosition]
-listMovePrev index board = listMoves index (getPiece board index) board 
 
+-- PIECE MOVEMENTS -- LIST AVAILABLE MOVES FOR A PIECE
 listMoves::PiecePosition -> Piece -> Board -> [PiecePosition]
 listMoves index (Piece color Rook hasMoved) board = listMoveUsingDirection True index [top, bottom, left, right] (moveType color board)
 listMoves index (Piece color Bishop hasMoved) board = listMoveUsingDirection True index [topRight, leftTop, bottomLeft, rightBottom] (moveType color board)
@@ -152,23 +151,6 @@ listMoves index (Piece color Queen hasMoved) board = listMoveUsingDirection True
 listMoves index (Piece color King hasMoved) board = listMoveUsingDirection False index [top, bottom, left, right, topRight, leftTop, bottomLeft, rightBottom] (moveType color board)
 listMoves index (Piece color Knight hasMoved) board = listMoveUsingDirection False index [knightBottomLeft, knightBottomRight, knightLeftBottom, knightLeftTop, knightRightBottom, knightRightTop, knightTopLeft, knightTopRight] (moveType color board)
 listMoves index (Piece color Pawn hasMoved) board = listPawnMovement index color hasMoved board
-
-listPawnMovement :: PiecePosition -> Color -> Bool -> Board -> [PiecePosition]
-listPawnMovement index color hasMoved board = (pawnFrontMove index color hasMoved board) ++ (listPawnTakeMovement index color board)
-
-listPawnTakeMovement :: PiecePosition -> Color -> Board -> [PiecePosition]
-listPawnTakeMovement index color board = let takeMovements = if color == White then [leftTop, topRight] else [bottomLeft, rightBottom]
-                                         in listMoveUsingDirection False index takeMovements (moveTypeOnlyTakeAllowed color board)
-
-pawnFrontMove :: PiecePosition -> Color -> Bool -> Board -> [PiecePosition]
-pawnFrontMove index color hasMoved board = let frontMovement = if color == White then top else bottom
-                                           in let moveTypeF = moveTypeTakeNonAllowed board
-                                           in pawnFrontMoveAux frontMovement moveTypeF hasMoved (listMoveNonRecursive index frontMovement moveTypeF)
-
-pawnFrontMoveAux :: (PiecePosition -> PiecePosition) -> (PiecePosition -> MoveType) -> Bool -> [PiecePosition] -> [PiecePosition]
-pawnFrontMoveAux _ _ _ [] = []
-pawnFrontMoveAux _ _ True positions = positions
-pawnFrontMoveAux moveFunc moveTypeF hasMoved (pp:[]) = pp:(listMoveNonRecursive pp moveFunc moveTypeF)
 
 listMoveUsingDirection :: Bool -> PiecePosition -> [(PiecePosition -> PiecePosition)] -> (PiecePosition -> MoveType) -> [PiecePosition]
 listMoveUsingDirection _ _ [] _ = []
@@ -205,6 +187,23 @@ moveTypeOnlyTakeAllowed myColor board index = case (getPiece board index) of
   Sentinel -> InvalidMove
   Piece otherColor pieceTypes _ -> if (otherColor == myColor) then InvalidMove else TakeMove
 
+-- PAWN MOVEMENTS
+listPawnMovement :: PiecePosition -> Color -> Bool -> Board -> [PiecePosition]
+listPawnMovement index color hasMoved board = (pawnFrontMove index color hasMoved board) ++ (listPawnTakeMovement index color board)
+
+listPawnTakeMovement :: PiecePosition -> Color -> Board -> [PiecePosition]
+listPawnTakeMovement index color board = let takeMovements = if color == White then [leftTop, topRight] else [bottomLeft, rightBottom]
+                                         in listMoveUsingDirection False index takeMovements (moveTypeOnlyTakeAllowed color board)
+
+pawnFrontMove :: PiecePosition -> Color -> Bool -> Board -> [PiecePosition]
+pawnFrontMove index color hasMoved board = let frontMovement = if color == White then top else bottom;
+                                               moveTypeF = moveTypeTakeNonAllowed board in
+                                           pawnFrontMoveAux frontMovement moveTypeF hasMoved (listMoveNonRecursive index frontMovement moveTypeF)
+
+pawnFrontMoveAux :: (PiecePosition -> PiecePosition) -> (PiecePosition -> MoveType) -> Bool -> [PiecePosition] -> [PiecePosition]
+pawnFrontMoveAux _ _ _ [] = []
+pawnFrontMoveAux _ _ True positions = positions
+pawnFrontMoveAux moveFunc moveTypeF hasMoved (pp:[]) = pp:(listMoveNonRecursive pp moveFunc moveTypeF)
 
 getPiece::Board -> PiecePosition -> Piece
 getPiece board piecePosition = getPieceByIndex board (getIndex piecePosition)
@@ -213,7 +212,7 @@ getPieceByIndex::Board -> Int -> Piece
 getPieceByIndex board idx = (_pieces board) ! idx
 
 listAllMoves::Board -> [BoardWithMovement]
-listAllMoves board = (iterateAllPositions allPositions board) ++ (listCastlingBoards board)
+listAllMoves board = iterateAllPositions board
 
 listCastlingBoards :: Board -> [BoardWithMovement]
 listCastlingBoards board = if getColor board == White then (listCastlingBoardsRow 0 board) else (listCastlingBoardsRow 7 board)
@@ -251,12 +250,13 @@ swapBoardColor board = Board {
                            }
 
 allPositions = map convert8x8to10x12 [0..63]
-iterateAllPositions:: [Int] -> Board -> [BoardWithMovement]
-iterateAllPositions [] board = []
-iterateAllPositions (x:xs) board = (case (checkPiece (getColor board) (getPieceByIndex board x)) of
-  True  ->  listBoards (getPiecePosition x) board
-  False -> []
-  ) ++ iterateAllPositions xs board
+
+-- Return every piece that could theoretically move this turn
+filterMovablePiecesOnly :: Board -> [Int]
+filterMovablePiecesOnly board = filter (\x -> checkPiece (_color board) (getPieceByIndex board x)) allPositions
+
+iterateAllPositions:: Board -> [BoardWithMovement]
+iterateAllPositions board = foldr (\x a -> listBoards (getPiecePosition x) board ++ a) [] (filterMovablePiecesOnly board)
 
 checkPiece::Color -> Piece -> Bool
 checkPiece _ None = False
@@ -274,7 +274,6 @@ listAllBoardsSorted board = let sortF = if (getColor board) == White then (\b1 b
                                                                      else (\b1 b2 ->  compare (scoreBoard b1) (scoreBoard b2))
                                         in sortBy sortF (listAllBoards board)
 
-
 chessMinimax :: Int -> Board -> Board
 chessMinimax deepness board = minimaxAlphaBeta scoreBoard listAllBoards (-1000000) 1000000 deepness ((getColor board) == White) board
 
@@ -289,3 +288,20 @@ chessMinimaxSortedWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard 
 
 chessMinimaxDeep4 :: Board -> Board
 chessMinimaxDeep4 board = chessMinimax 4 board
+
+-- Checks whether the king would be taken in the next turn
+isKingBeingChecked :: Board -> Bool
+isKingBeingChecked board = 
+    let movablePiecesPosition = map getPiecePosition (filterMovablePiecesOnly board);
+        allMovesPosition = foldr (\x a -> listMoves x (getPiece board x) board ++ a) [] movablePiecesPosition in
+        isJust $ find (wouldTakeKing board) allMovesPosition
+
+
+-- Receives a position (presumably from a possible next move), checks if it is occupied by an opposite color King
+wouldTakeKing :: Board -> PiecePosition -> Bool
+wouldTakeKing board index = case ((_pieces board) ! (getIndex index)) of 
+  Piece color King _ -> if (oppositeColor color == _color board) then True else False
+  otherwise -> False
+
+
+flipColor board = board {_color = oppositeColor (_color board)}
