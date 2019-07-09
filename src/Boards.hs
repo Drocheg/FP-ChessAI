@@ -59,7 +59,7 @@ testBoard2 = Board {
 }
 
 testBoard3 = Board {
-  _color = Black,
+  _color = White,
   _winState = Nothing,
   _whitePieces = [],
   _blackPieces = [],
@@ -67,14 +67,14 @@ testBoard3 = Board {
   _pieces = (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
-        Sentinel                , None                    , None                    , None                    , None                    , Piece White Bishop False, Piece White Bishop False, Piece White Bishop False, None                    , Sentinel                ,
+        Sentinel                , None                    , None                    , None                    , Piece White Queen False , None                    , Piece White Queen False , Piece White Queen False , None                    , Sentinel                ,
         Sentinel                , Piece Black Pawn False  , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
-        Sentinel                , Piece Black Rook False  , None                    , None                    , None                    , Piece Black King False  , Piece Black Bishop False, Piece Black Knight False, Piece Black Rook False  , Sentinel                ,
+        Sentinel                , Piece Black Rook False  , None                    , None                    , None                    , Piece Black King False  , None                    , None                    , Piece Black Rook False  , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel
         ])
@@ -215,7 +215,9 @@ listAllMoves::Board -> [BoardWithMovement]
 listAllMoves board = iterateAllPositions board
 
 listCastlingBoards :: Board -> [BoardWithMovement]
-listCastlingBoards board = if getColor board == White then (listCastlingBoardsRow 0 board) else (listCastlingBoardsRow 7 board)
+listCastlingBoards board = if (isKingBeingChecked (flipColor board)) then [] else
+                           if getColor board == White then (listCastlingBoardsRow 0 board)
+                                                      else (listCastlingBoardsRow 7 board)
 
 listCastlingBoardsRow:: Int -> Board -> [BoardWithMovement]
 listCastlingBoardsRow row board = (castlingBoard row board 0 [1,2,3] 3 2) ++ (castlingBoard row board 7 [6,5] 5 6)
@@ -230,7 +232,7 @@ castlingBoard row board rookCol emptyCols rookEndCol kingEndCol =
         king                = getPiece board kingStartPosition;
         emptyPieces = map (\x -> getPieceByIndex board (convertXYto10x12 row x)) emptyCols in
     if validCastling emptyPieces rook king
-    then let boardAfterRookMovement = swapBoardColor ((\(x, _, _) -> x) (listBoardsWithMovement rookStartPosition board rookEndPosition)) in
+    then let boardAfterRookMovement = flipColor ((\(x, _, _) -> x) (listBoardsWithMovement rookStartPosition board rookEndPosition)) in
          [listBoardsWithMovement kingStartPosition boardAfterRookMovement kingEndPosition]
     else []
 
@@ -239,15 +241,7 @@ validCastling emptyPieces (Piece _ Rook False) (Piece _ King False) = all (\x ->
 validCastling _ _ _ = False
 
 
-swapBoardColor :: Board -> Board
-swapBoardColor board = Board {
-                             _color = oppositeColor $ _color board,
-                             _winState = _winState board,
-                             _whitePieces = _whitePieces board,
-                             _blackPieces = _blackPieces board,
-                             _score = _score board,
-                             _pieces = _pieces board
-                           }
+
 
 allPositions = map convert8x8to10x12 [0..63]
 
@@ -275,16 +269,16 @@ listAllBoardsSorted board = let sortF = if (getColor board) == White then (\b1 b
                                         in sortBy sortF (listAllBoards board)
 
 chessMinimax :: Int -> Board -> Board
-chessMinimax deepness board = minimaxAlphaBeta scoreBoard listAllBoards (-1000000) 1000000 deepness ((getColor board) == White) board
+chessMinimax deepness board = minimaxAlphaBeta scoreBoard scoreBoardNoMovements listAllBoards (-1000000) 1000000 deepness ((getColor board) == White) board
 
 chessMinimaxWithInfo :: Int -> Board -> MovePath Board
-chessMinimaxWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard listAllBoards (-1000000) 1000000 deepness ((getColor board) == White) board
+chessMinimaxWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard scoreBoardNoMovements listAllBoards (-1000000) 1000000 deepness ((getColor board) == White) board
 
 chessMinimaxSorted :: Int -> Board -> Board
-chessMinimaxSorted deepness board = minimaxAlphaBeta scoreBoard listAllBoardsSorted (-1000000) 1000000 deepness ((getColor board) == White) board
+chessMinimaxSorted deepness board = minimaxAlphaBeta scoreBoard scoreBoardNoMovements listAllBoardsSorted (-1000000) 1000000 deepness ((getColor board) == White) board
 
 chessMinimaxSortedWithInfo :: Int -> Board -> MovePath Board
-chessMinimaxSortedWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard listAllBoardsSorted (-1000000) 1000000 deepness ((getColor board) == White) board
+chessMinimaxSortedWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard scoreBoardNoMovements listAllBoardsSorted (-1000000) 1000000 deepness ((getColor board) == White) board
 
 chessMinimaxDeep4 :: Board -> Board
 chessMinimaxDeep4 board = chessMinimax 4 board
@@ -305,3 +299,10 @@ wouldTakeKing board index = case ((_pieces board) ! (getIndex index)) of
 
 
 flipColor board = board {_color = oppositeColor (_color board)}
+
+scoreBoardNoMovements :: Board -> Int
+scoreBoardNoMovements board = if (isKingBeingChecked (flipColor board)) then loseScore (getColor board) else 0
+
+loseScore :: Color -> Int
+loseScore White = (-50000)
+loseScore Black = 50000

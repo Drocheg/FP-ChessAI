@@ -1,4 +1,4 @@
-module UI (printBoard, printPossibleMoves) where
+module UI (printBoard, printPossibleMoves, printGameEnd) where
 import BoardDataTypes
 import Boards 
 import Data.Char
@@ -67,3 +67,11 @@ printFile x = show (x + 1)
 
 printRank::Int -> String
 printRank y = [chr (ord 'a' + y)]
+
+printGameEnd:: Board -> String
+printGameEnd board = if (isKingBeingChecked (flipColor board)) then printGameLose (_color board) else "It's a Tie"
+
+printGameLose :: Color -> String
+printGameLose White = "Black won"
+printGameLose Black = "White won"
+
