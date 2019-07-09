@@ -33,7 +33,7 @@ minimax :: a -> TreeInfo a -> Int -> AlphaBeta -> MovePath a -- Tree, treeInfo, 
 minimax node treeInfo indexM ab = minimaxAux node ((nextNodesF treeInfo) node) treeInfo indexM ab
 
 minimaxAux :: a -> [a] -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
-minimaxAux node (r:rs) (TreeInfo scoreF _ 0 _) indexM ab = MovePath (scoreF node) 0 []
+minimaxAux node _ (TreeInfo scoreF _ 0 _) indexM ab = MovePath (scoreF node) 0 []
 minimaxAux node [] (TreeInfo scoreF _ _ _) indexM ab = MovePath (scoreF node) 0 []
 minimaxAux node (r:rs) treeInfo indexM ab = minimaxHorizontal (nextLevelMinimax r treeInfo 0 ab) rs treeInfo 1 ab
 
