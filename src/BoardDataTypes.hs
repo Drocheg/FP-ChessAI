@@ -1,5 +1,5 @@
 module BoardDataTypes
-    ( Color(..),
+    ( PieceColor(..),
       PieceType(..),
       Piece(..),
       PieceArray,
@@ -12,13 +12,13 @@ module BoardDataTypes
     ) where
 import Data.Array
 
-data Color = Black | White  deriving (Show, Eq)
-data PieceType = Pawn
-  | Rook
-  | King
+data PieceColor = Black | White  deriving (Show, Eq, Ord)
+data PieceType = Pawn Bool
+  | Rook Bool
+  | King Bool
   | Knight
   | Queen
-  | Bishop deriving (Show, Eq)
+  | Bishop deriving (Show, Ord, Eq)
 
 data PiecePosition = PiecePosition {
   x::Int,
@@ -26,11 +26,11 @@ data PiecePosition = PiecePosition {
 } deriving (Show, Eq)
 
 -- Sentinel --> Invalid board position, useful to simplify bounds checking
-data Piece = Sentinel | None | Piece  Color PieceType Bool deriving (Show, Eq)
+data Piece = Sentinel | None | Piece PieceColor PieceType deriving (Show, Eq)
 type PieceArray = Array Int Piece 
 data WinState = WhiteWins | BlackWins | Draw deriving (Show)
 data Board = Board {
-  _color::Color,
+  _pieceColor::PieceColor,
   _winState::Maybe WinState,
   _whitePieces::[PiecePosition],
   _blackPieces::[PiecePosition],
@@ -38,7 +38,9 @@ data Board = Board {
   _pieces::PieceArray
 } deriving (Show)
 
-getHasMoved (Piece _ _ hasMoved) = hasMoved
+getHasMoved (Piece _ (Rook hasMoved)) = hasMoved
+getHasMoved (Piece _ (Pawn hasMoved)) = hasMoved
+getHasMoved (Piece _ (King hasMoved)) = hasMoved
 getHasMoved None = False
 
 getIndex :: PiecePosition -> Int
@@ -49,4 +51,3 @@ convert8x8to10x12 index = convertXYto10x12 (index `div` 8) (index `mod` 8)
 
 convertXYto10x12 :: Int -> Int -> Int
 convertXYto10x12 x y = (x + 2) * 10 + (y + 1)
-

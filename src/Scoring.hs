@@ -18,27 +18,27 @@ scoreBoard board = _score board
 
 scorePiece :: PiecePosition -> Piece -> Int
 scorePiece _ None = 0
-scorePiece (PiecePosition x y) (Piece White pieceType _) = scorePieceTypeAndPosition (PiecePosition (7-x) y) pieceType
-scorePiece piecePosition (Piece Black pieceType _) = (-scorePieceTypeAndPosition piecePosition pieceType)
+scorePiece (PiecePosition x y) (Piece White pieceType) = scorePieceTypeAndPosition (PiecePosition (7-x) y) pieceType
+scorePiece piecePosition (Piece Black pieceType) = (-scorePieceTypeAndPosition piecePosition pieceType)
 
 scorePieceTypeAndPosition :: PiecePosition -> PieceType -> Int
 scorePieceTypeAndPosition piecePosition pieceType = scorePieceType pieceType + scorePiecePosition (getIndex piecePosition) pieceType
 
 scorePieceType :: PieceType -> Int
-scorePieceType Rook      = 500
+scorePieceType (Rook _)      = 500
 scorePieceType Bishop    = 330
 scorePieceType Queen     = 900
-scorePieceType King      = 20000
+scorePieceType (King _)      = 20000
 scorePieceType Knight    = 320
-scorePieceType Pawn      = 100
+scorePieceType (Pawn _)      = 100
 
 scorePiecePosition :: Int -> PieceType -> Int
-scorePiecePosition index Rook    = rookPositions ! index
+scorePiecePosition index (Rook _)    = rookPositions ! index
 scorePiecePosition index Bishop  = bishopPositions ! index
 scorePiecePosition index Queen   = queenPositions ! index
-scorePiecePosition index King    = kingPositions ! index
+scorePiecePosition index (King _)    = kingPositions ! index
 scorePiecePosition index Knight  = knightPositions ! index
-scorePiecePosition index Pawn    = pawnPositions ! index
+scorePiecePosition index (Pawn _)    = pawnPositions ! index
 
 
 rookPositions = (listArray (0, 119) [
