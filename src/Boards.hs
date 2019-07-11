@@ -1,4 +1,4 @@
-module Boards (flippieceColor, isKingBeingChecked, getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, chessMinimaxSorted, BoardWithMovement (..) ) where
+module Boards (allPieces, flippieceColor, isKingBeingChecked, getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, chessMinimaxSorted, BoardWithMovement (..) ) where
 
 import Data.List
 import Data.Ord
@@ -113,6 +113,11 @@ oppositepieceColor::PieceColor->PieceColor
 oppositepieceColor White = Black
 oppositepieceColor Black = White
 
+updatePieceToMoved (Rook False) = Rook True
+updatePieceToMoved (King False) = King True
+updatePieceToMoved (Pawn False) = Pawn True
+updatePieceToMoved piece = piece
+
 listBoardsWithMovement :: PiecePosition -> Board -> PiecePosition -> BoardWithMovement
 listBoardsWithMovement oldPosition board newPosition =
     let pieces = _pieces board;
@@ -132,6 +137,9 @@ listBoardsWithMovement oldPosition board newPosition =
 calculateMovedPiece :: PiecePosition -> Piece -> Piece
 calculateMovedPiece (PiecePosition 0 _) (Piece color (Pawn _)) = (Piece color Queen)
 calculateMovedPiece (PiecePosition 7 _) (Piece color (Pawn _)) = (Piece color Queen)
+calculateMovedPiece _ (Piece color (Pawn False)) = (Piece color (Pawn True))
+calculateMovedPiece _ (Piece color (Rook False)) = (Piece color (Rook True))
+calculateMovedPiece _ (Piece color (King False)) = (Piece color (King True))
 calculateMovedPiece _ piece = piece
 calculateMovedPiece _ None = None
 
@@ -244,6 +252,8 @@ validCastling _ _ _ = False
 
 
 allPositions = map convert8x8to10x12 [0..63]
+
+allPieces board = map (\i -> (getPiecePosition i, getPieceByIndex board i)) allPositions
 
 -- Return every piece that could theoretically move this turn
 filterMovablePiecesOnly :: Board -> [Int]

@@ -26,7 +26,7 @@ data PiecePosition = PiecePosition {
 } deriving (Show, Eq)
 
 -- Sentinel --> Invalid board position, useful to simplify bounds checking
-data Piece = Sentinel | None | Piece PieceColor PieceType deriving (Show, Eq)
+data Piece = Sentinel | None | Piece PieceColor PieceType deriving (Show, Eq, Ord)
 type PieceArray = Array Int Piece 
 data WinState = WhiteWins | BlackWins | Draw deriving (Show)
 data Board = Board {

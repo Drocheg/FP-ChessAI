@@ -1,18 +1,39 @@
-module UI (printBoard, printPossibleMoves, loadPiecePictures, PieceKey(..)) where
+module UI (printBoard, printPossibleMoves, loadPiecePictures) where
 import BoardDataTypes
 import Boards 
 import Data.Char
 import Data.Array
 import qualified Data.Map as Map
 import Graphics.Gloss
+import Data.Maybe
+data PiecePictureMap = Map Piece  Picture
 
-data PieceKey = PieceKey PieceColor PieceType deriving (Ord, Eq)
-data PiecePictureMap = Map PieceKey  Picture
+loadPiecePicture path piece m = do
+  picture <- loadBMP path
+  return (Map.insert piece picture m)
+
 
 loadPiecePictures = do
-  let m = Map.empty
-  picture <- loadBMP "./images/black_bishop.bmp"
-  return (Map.insert (PieceKey Black Bishop) picture m)
+  m <- loadPiecePicture "./images/black_bishop.bmp" (Piece Black Bishop) Map.empty
+  m <- loadPiecePicture "./images/black_rook.bmp" (Piece Black (Rook False)) m
+  m <- loadPiecePicture "./images/black_rook.bmp" (Piece Black (Rook True)) m
+  m <- loadPiecePicture "./images/black_knight.bmp" (Piece Black Knight) m
+  m <- loadPiecePicture "./images/black_pawn.bmp" (Piece Black (Pawn False)) m
+  m <- loadPiecePicture "./images/black_pawn.bmp" (Piece Black (Pawn True)) m
+  m <- loadPiecePicture "./images/black_king.bmp" (Piece Black (King False)) m
+  m <- loadPiecePicture "./images/black_king.bmp" (Piece Black (King True)) m
+  m <- loadPiecePicture "./images/black_queen.bmp" (Piece Black Queen) m
+  m <- loadPiecePicture "./images/white_bishop.bmp" (Piece White Bishop) m
+  m <- loadPiecePicture "./images/white_rook.bmp" (Piece White (Rook False)) m
+  m <- loadPiecePicture "./images/white_rook.bmp" (Piece White (Rook True)) m
+  m <- loadPiecePicture "./images/white_knight.bmp" (Piece White Knight) m
+  m <- loadPiecePicture "./images/white_pawn.bmp" (Piece White (Pawn False)) m
+  m <- loadPiecePicture "./images/white_pawn.bmp" (Piece White (Pawn True)) m
+  m <- loadPiecePicture "./images/white_king.bmp" (Piece White (King False)) m
+  m <- loadPiecePicture "./images/white_king.bmp" (Piece White (King True)) m
+  m <- loadPiecePicture "./images/white_queen.bmp" (Piece White Queen) m
+ 
+  return m
 
 printBoard b = printRows b ++ " \t A\t B\t C\t D\t E\t F\t G\t H\n"  ++ printCheckStatus b ++ "\n"
 

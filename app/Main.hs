@@ -40,18 +40,71 @@ import BoardDataTypes
 -- | Display "Hello World" in a window.
 --
 import Graphics.Gloss
+import Graphics.Gloss.Interface.Pure.Game
 import Data.Maybe
+import Data.List
 import qualified Data.Map as Map
+
+data GameState = GameState {
+  _board::Board,
+  _selectedPosition::Maybe PiecePosition
+}
 
 window = InWindow "Chess" (512, 512) (10, 10)
 
-handleInput event board = board
-draw pictureData board = Map.lookup  (PieceKey Black Bishop) pictureData
-main = do
-  d <- loadPiecePictures;
-  play window white 60 initialBoard (\b -> fromMaybe Blank (draw d b)) handleInput (const id)
+handleInput (EventKey (Char 'r') Down _ _) gs = gs {
+  _board = initialBoard
+}
 
-picture
-  = Translate (-170) (-20) -- shift the text to the middle of the window
-  $ Scale 0.5 0.5		 -- display it half the original size
-  $ Text "Hello World"	 -- text to display
+handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState board (Just selectedPosition)) = 
+  let nextPiecePosition = toPiecePosition offset; 
+      move = find (\(_,startPosition,endPosition) -> endPosition == nextPiecePosition && startPosition == selectedPosition) $ listAllMoves board; in
+  case (move) of 
+    Nothing -> GameState board Nothing
+    Just (newBoard, _, _) -> GameState newBoard Nothing
+
+handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState board Nothing) = 
+  let nextPiecePosition = toPiecePosition offset; 
+      move = find (\(_,startPosition,_) -> startPosition == nextPiecePosition) $ listAllMoves board; in
+  case (move) of 
+    Nothing -> GameState board Nothing
+    Just (_, startPosition, _) -> GameState board (Just startPosition)
+
+handleInput _ gs = gs
+
+toPiecePosition (x, y) = PiecePosition ((256 + floor y) `div` 64) ((256 + floor x) `div` 64)
+
+translatePiecePosition (PiecePosition x y) = let (offsetX, offsetY) = (64 * y - 256 + 32, 64* x - 256 + 32 ) in 
+  Translate (fromIntegral offsetX) (fromIntegral offsetY)
+
+drawPiece piecePictureMap board (piecePosition, piece) = 
+  translatePiecePosition piecePosition
+  $ fromMaybe Blank $ Map.lookup piece piecePictureMap
+
+drawPieces piecePictureMap board = Pictures 
+  $ map (drawPiece piecePictureMap board) (allPieces board)
+
+renderMovementSquare = color (makeColor 0 0.2 0 0.2) $ polygon [(-32, -32), (-32, 32), (32, 32), (32, -32)]
+
+
+drawMovement (Just selectedPosition) (_, startSquare, endSquare) = if (selectedPosition == startSquare) then 
+  translatePiecePosition endSquare renderMovementSquare else Blank
+drawMovement Nothing (_, startSquare, _) = translatePiecePosition startSquare renderMovementSquare
+
+drawMovements (GameState board selectedPosition) = Pictures
+  $ map (drawMovement selectedPosition) (listAllMoves board)
+
+drawFrame db dp dm gs = Pictures [
+  db,                            -- Board Picture
+  dm gs,                         -- Movements Picture
+  dp (_board gs)                 -- Pieces Picture
+  ]
+
+main = do
+  piecePictureMap <- loadPiecePictures;
+  boardImage <- loadBMP "./images/board.bmp"
+  let initialGameState = GameState {
+    _board = initialBoard,
+    _selectedPosition = Nothing
+  }
+  play window white 60 initialGameState (drawFrame boardImage (drawPieces piecePictureMap) drawMovements) handleInput (const id)
