@@ -1,4 +1,4 @@
-module Boards (allPieces, flippieceColor, isKingBeingChecked, getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, chessMinimaxSorted, BoardWithMovement (..) ) where
+module Boards (getColor, allPieces, flippieceColor, isKingBeingChecked, getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, chessMinimaxSorted, BoardWithMovement (..) ) where
 
 import Data.List
 import Data.Ord
@@ -141,7 +141,6 @@ calculateMovedPiece _ (Piece color (Pawn False)) = (Piece color (Pawn True))
 calculateMovedPiece _ (Piece color (Rook False)) = (Piece color (Rook True))
 calculateMovedPiece _ (Piece color (King False)) = (Piece color (King True))
 calculateMovedPiece _ piece = piece
-calculateMovedPiece _ None = None
 
 listBoardsWithMovementAux :: PiecePosition -> PieceArray -> PiecePosition -> Piece -> PieceArray
 listBoardsWithMovementAux oldPosition boardArray newPosition piece = boardArray // [((getIndex oldPosition), None), ((getIndex newPosition), piece)]

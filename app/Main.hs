@@ -91,14 +91,26 @@ drawMovement (Just selectedPosition) (_, startSquare, endSquare) = if (selectedP
   translatePiecePosition endSquare renderMovementSquare else Blank
 drawMovement Nothing (_, startSquare, _) = translatePiecePosition startSquare renderMovementSquare
 
-drawMovements (GameState board selectedPosition) = Pictures
-  $ map (drawMovement selectedPosition) (listAllMoves board)
+drawMovements (GameState board selectedPosition) = case (getColor board) of 
+  White -> Pictures
+    $ map (drawMovement selectedPosition) (listAllMoves board)
+  Black -> Blank
 
 drawFrame db dp dm gs = Pictures [
   db,                            -- Board Picture
   dm gs,                         -- Movements Picture
   dp (_board gs)                 -- Pieces Picture
   ]
+
+handleAI _ gs = case (getColor (_board gs)) of 
+  White -> gs
+  Black -> gs {
+    _board = chessMinimaxSorted 4 (_board gs)
+  }
+
+handleInputWrapper e gs = case (getColor (_board gs)) of 
+  White -> handleInput e gs
+  Black -> gs
 
 main = do
   piecePictureMap <- loadPiecePictures;
@@ -107,4 +119,4 @@ main = do
     _board = initialBoard,
     _selectedPosition = Nothing
   }
-  play window white 60 initialGameState (drawFrame boardImage (drawPieces piecePictureMap) drawMovements) handleInput (const id)
+  play window white 60 initialGameState (drawFrame boardImage (drawPieces piecePictureMap) drawMovements) handleInput handleAI
