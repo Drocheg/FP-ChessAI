@@ -47,7 +47,8 @@ import qualified Data.Map as Map
 
 data GameState = GameState {
   _board::Board,
-  _selectedPosition::Maybe PiecePosition
+  _selectedPosition::Maybe PiecePosition,
+  _undoQ::[Board]
 }
 
 window = InWindow "Chess" (512, 512) (10, 10)
@@ -56,19 +57,24 @@ handleInput (EventKey (Char 'r') Down _ _) gs = gs {
   _board = initialBoard
 }
 
-handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState board (Just selectedPosition)) = 
+handleInput (EventKey (Char 'u') Down _ _) gs = gs {
+  _board = head (_undoQ gs),
+  _undoQ = tail (_undoQ gs)
+}
+
+handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState board (Just selectedPosition) undo) = 
   let nextPiecePosition = toPiecePosition offset; 
       move = find (\(_,startPosition,endPosition) -> endPosition == nextPiecePosition && startPosition == selectedPosition) $ listAllMoves board; in
   case (move) of 
-    Nothing -> GameState board Nothing
-    Just (newBoard, _, _) -> GameState newBoard Nothing
+    Nothing -> GameState board Nothing undo
+    Just (newBoard, _, _) -> GameState newBoard Nothing (board:undo)
 
-handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState board Nothing) = 
+handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState board Nothing undo) = 
   let nextPiecePosition = toPiecePosition offset; 
       move = find (\(_,startPosition,_) -> startPosition == nextPiecePosition) $ listAllMoves board; in
   case (move) of 
-    Nothing -> GameState board Nothing
-    Just (_, startPosition, _) -> GameState board (Just startPosition)
+    Nothing -> GameState board Nothing undo
+    Just (_, startPosition, _) -> GameState board (Just startPosition) undo
 
 handleInput _ gs = gs
 
@@ -91,7 +97,7 @@ drawMovement (Just selectedPosition) (_, startSquare, endSquare) = if (selectedP
   translatePiecePosition endSquare renderMovementSquare else Blank
 drawMovement Nothing (_, startSquare, _) = translatePiecePosition startSquare renderMovementSquare
 
-drawMovements (GameState board selectedPosition) = case (getColor board) of 
+drawMovements (GameState board selectedPosition _) = case (getColor board) of 
   White -> Pictures
     $ map (drawMovement selectedPosition) (listAllMoves board)
   Black -> Blank
@@ -117,6 +123,7 @@ main = do
   boardImage <- loadBMP "./images/board.bmp"
   let initialGameState = GameState {
     _board = initialBoard,
-    _selectedPosition = Nothing
+    _selectedPosition = Nothing,
+    _undoQ = []
   }
   play window white 60 initialGameState (drawFrame boardImage (drawPieces piecePictureMap) drawMovements) handleInput handleAI
