@@ -57,10 +57,8 @@ handleInput (EventKey (Char 'r') Down _ _) gs = gs {
   _board = initialBoard
 }
 
-handleInput (EventKey (Char 'u') Down _ _) gs = gs {
-  _board = head (_undoQ gs),
-  _undoQ = tail (_undoQ gs)
-}
+handleInput (EventKey (Char 'u') Down _ _) (GameState board selPos (x: xs)) = GameState x selPos xs
+handleInput (EventKey (Char 'u') Down _ _) (GameState board selPos []) = GameState board selPos []
 
 handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState board (Just selectedPosition) undo) = 
   let nextPiecePosition = toPiecePosition offset; 
