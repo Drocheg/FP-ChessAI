@@ -5,10 +5,18 @@ module BoardDataTypes
       PieceArray,
       Board(..),
       PiecePosition(..),
+      MoveType(..),
+      BoardWithMovement,
       getIndex,
       convert8x8to10x12,
       convertXYto10x12,
-      getHasMoved,
+      getPieces,
+      flipPieceColor,
+      oppositePieceColor,
+      getColor,
+      getPiecePosition,
+      getPiece,
+      getPieceByIndex,
     ) where
 import Data.Array
 
@@ -38,10 +46,9 @@ data Board = Board {
   _pieces::PieceArray
 } deriving (Show)
 
-getHasMoved (Piece _ (Rook hasMoved)) = hasMoved
-getHasMoved (Piece _ (Pawn hasMoved)) = hasMoved
-getHasMoved (Piece _ (King hasMoved)) = hasMoved
-getHasMoved None = False
+data MoveType = InvalidMove | TakeMove | SimpleMove
+
+type BoardWithMovement = (Board, PiecePosition, PiecePosition)
 
 getIndex :: PiecePosition -> Int
 getIndex (PiecePosition x y) = convertXYto10x12 x y
@@ -51,3 +58,26 @@ convert8x8to10x12 index = convertXYto10x12 (index `div` 8) (index `mod` 8)
 
 convertXYto10x12 :: Int -> Int -> Int
 convertXYto10x12 x y = (x + 2) * 10 + (y + 1)
+
+getPieces::Board -> PieceArray
+getPieces board = _pieces board;
+
+flipPieceColor board = board {_pieceColor = oppositePieceColor (_pieceColor board)}
+
+oppositePieceColor::PieceColor->PieceColor
+oppositePieceColor White = Black
+oppositePieceColor Black = White
+
+getColor::Board -> PieceColor
+getColor board = _pieceColor board
+
+getPiecePosition :: Int -> PiecePosition
+getPiecePosition idx = PiecePosition ((idx `div` 10) - 2) ((idx `mod` 10) - 1)
+--  0  0  -> 2 1 -> 21
+-- -1 -1  -> 1 0 -> 10
+
+getPiece::Board -> PiecePosition -> Piece
+getPiece board piecePosition = getPieceByIndex board (getIndex piecePosition)
+
+getPieceByIndex::Board -> Int -> Piece
+getPieceByIndex board idx = (_pieces board) ! idx

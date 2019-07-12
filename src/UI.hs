@@ -1,6 +1,6 @@
 module UI (printBoard, printPossibleMoves, loadPiecePictures) where
 import BoardDataTypes
-import Boards 
+import Boards
 import Data.Char
 import Data.Array
 import qualified Data.Map as Map
@@ -37,7 +37,7 @@ loadPiecePictures = do
 
 printBoard b = printRows b ++ " \t A\t B\t C\t D\t E\t F\t G\t H\n"  ++ printCheckStatus b ++ "\n"
 
-printCheckStatus b = case (isKingBeingChecked (flippieceColor b)) of 
+printCheckStatus b = case (isKingBeingChecked (flipPieceColor b)) of
   True -> "King is Being Checked"
   False -> "King is not being Checked"
 
@@ -100,7 +100,7 @@ printRank::Int -> String
 printRank y = [chr (ord 'a' + y)]
 
 printGameEnd:: Board -> String
-printGameEnd board = if (isKingBeingChecked (flippieceColor board)) then printGameLose (_pieceColor board) else "It's a Tie"
+printGameEnd board = if (isKingBeingChecked (flipPieceColor board)) then printGameLose (_pieceColor board) else "It's a Tie"
 
 printGameLose :: PieceColor -> String
 printGameLose White = "Black won"
