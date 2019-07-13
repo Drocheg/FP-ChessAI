@@ -1,4 +1,4 @@
-module Boards (getColor, allPieces, flipPieceColor, isKingBeingChecked, getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, chessMinimaxSorted, BoardWithMovement (..) ) where
+module Boards (getColor, allPieces, flipPieceColor, isKingBeingChecked, getPiece, getPieces, initialBoard, listAllMoves, chessMinimax, chessMinimaxSorted, chessMinimaxWithInfo, chessMinimaxSortedWithInfo, BoardWithMovement (..) ) where
 
 import Data.List
 import Data.Ord

@@ -32,35 +32,44 @@ listMoves::PiecePosition -> Board -> [PiecePosition]
 listMoves index board = listMovesAux (getPiece board index) index board
 
 listMovesAux::Piece -> PiecePosition -> Board -> [PiecePosition]
-listMovesAux (Piece pieceColor (Rook hasMoved)) index board = listMoveUsingDirection True index [top, bottom, left, right] (moveType pieceColor board)
-listMovesAux (Piece pieceColor Knight) index board = listMoveUsingDirection False index [knightBottomLeft, knightBottomRight, knightLeftBottom, knightLeftTop, knightRightBottom, knightRightTop, knightTopLeft, knightTopRight] (moveType pieceColor board)
-listMovesAux (Piece pieceColor Bishop) index board = listMoveUsingDirection True index [topRight, leftTop, bottomLeft, rightBottom] (moveType pieceColor board)
-listMovesAux (Piece pieceColor Queen) index board = listMoveUsingDirection True index [top, bottom, left, right, topRight, leftTop, bottomLeft, rightBottom] (moveType pieceColor board)
-listMovesAux (Piece pieceColor (King hasMoved)) index board = listMoveUsingDirection False index [top, bottom, left, right, topRight, leftTop, bottomLeft, rightBottom] (moveType pieceColor board)
+listMovesAux (Piece pieceColor (Rook hasMoved)) index board = listMovesUsingDirections True index [top, bottom, left, right] (moveType pieceColor board)
+listMovesAux (Piece pieceColor Knight) index board = listMovesUsingDirections False index [knightBottomLeft, knightBottomRight, knightLeftBottom, knightLeftTop, knightRightBottom, knightRightTop, knightTopLeft, knightTopRight] (moveType pieceColor board)
+listMovesAux (Piece pieceColor Bishop) index board = listMovesUsingDirections True index [topRight, leftTop, bottomLeft, rightBottom] (moveType pieceColor board)
+listMovesAux (Piece pieceColor Queen) index board = listMovesUsingDirections True index [top, bottom, left, right, topRight, leftTop, bottomLeft, rightBottom] (moveType pieceColor board)
+listMovesAux (Piece pieceColor (King hasMoved)) index board = listMovesUsingDirections False index [top, bottom, left, right, topRight, leftTop, bottomLeft, rightBottom] (moveType pieceColor board)
 listMovesAux (Piece pieceColor (Pawn hasMoved)) index board = listPawnMovement index pieceColor hasMoved board
 
-listMoveUsingDirection :: Bool -> PiecePosition -> [(PiecePosition -> PiecePosition)] -> (PiecePosition -> MoveType) -> [PiecePosition]
-listMoveUsingDirection _ _ [] _ = []
-listMoveUsingDirection True index (f:fx) moveTypeF = (listMoveRecursive index f moveTypeF) ++ (listMoveUsingDirection True index fx moveTypeF)
-listMoveUsingDirection False index (f:fx) moveTypeF = (listMoveNonRecursive index f moveTypeF) ++ (listMoveUsingDirection False index fx moveTypeF)
+listMovesUsingDirections :: Bool -> PiecePosition -> [(PiecePosition -> PiecePosition)] -> (PiecePosition -> MoveType) -> [PiecePosition]
+listMovesUsingDirections isRecursive index directions moveTypeF = foldr (\x xs -> listMovesInSingleDirection isRecursive index x moveTypeF ++ xs) [] directions
 
-listMoveNonRecursive::PiecePosition -> (PiecePosition -> PiecePosition) -> (PiecePosition -> MoveType) -> [PiecePosition]
-listMoveNonRecursive index moveFunc moveTypeF = let newIndex = moveFunc index; in case (moveTypeF (moveFunc index)) of
+listMovesInSingleDirection::Bool -> PiecePosition -> (PiecePosition -> PiecePosition) -> (PiecePosition -> MoveType) -> [PiecePosition]
+listMovesInSingleDirection isRecursive index moveFunc moveTypeF = let newIndex = moveFunc index; in case (moveTypeF newIndex) of
     InvalidMove -> []
     TakeMove -> [newIndex]
-    SimpleMove -> [newIndex]
-
-listMoveRecursive::PiecePosition -> (PiecePosition -> PiecePosition) -> (PiecePosition -> MoveType) -> [PiecePosition]
-listMoveRecursive index moveFunc moveTypeF = let newIndex = moveFunc index; in case (moveTypeF newIndex) of
-    InvalidMove -> []
-    TakeMove -> [newIndex]
-    SimpleMove -> [newIndex] ++ (listMoveRecursive newIndex moveFunc moveTypeF)
+    SimpleMove -> if isRecursive then [newIndex] ++ (listMovesInSingleDirection isRecursive newIndex moveFunc moveTypeF) else [newIndex]
 
 moveType::PieceColor -> Board -> PiecePosition -> MoveType
 moveType mypieceColor board index = case (getPiece board index) of
   None -> SimpleMove
   Sentinel -> InvalidMove
   Piece otherpieceColor pieceTypes -> if (otherpieceColor == mypieceColor) then InvalidMove else TakeMove
+
+-- PAWN MOVEMENTS
+listPawnMovement :: PiecePosition -> PieceColor -> Bool -> Board -> [PiecePosition]
+listPawnMovement index pieceColor hasMoved board = (pawnFrontMove index pieceColor hasMoved board) ++ (listPawnTakeMovement index pieceColor board)
+
+listPawnTakeMovement :: PiecePosition -> PieceColor -> Board -> [PiecePosition]
+listPawnTakeMovement index pieceColor board = let directions = if pieceColor == White then [leftTop, topRight] else [bottomLeft, rightBottom]
+                                         in listMovesUsingDirections False index directions (moveTypeOnlyTakeAllowed pieceColor board)
+
+pawnFrontMove :: PiecePosition -> PieceColor -> Bool -> Board -> [PiecePosition]
+pawnFrontMove index pieceColor hasMoved board = let frontDirection = if pieceColor == White then top else bottom;
+                                                    frontMove = listMovesInSingleDirection False index frontDirection (moveTypeTakeNonAllowed board)
+                                                 in pawnFrontMoveAux frontDirection (moveTypeTakeNonAllowed board) hasMoved frontMove
+
+pawnFrontMoveAux :: (PiecePosition -> PiecePosition) -> (PiecePosition -> MoveType) -> Bool -> [PiecePosition] -> [PiecePosition]
+pawnFrontMoveAux moveFunc moveTypeF False (pp:[]) = pp:(listMovesInSingleDirection False pp moveFunc moveTypeF)
+pawnFrontMoveAux _ _ _ positions = positions
 
 moveTypeTakeNonAllowed:: Board -> PiecePosition -> MoveType
 moveTypeTakeNonAllowed board index = case (getPiece board index) of
@@ -73,23 +82,3 @@ moveTypeOnlyTakeAllowed mypieceColor board index = case (getPiece board index) o
   None -> InvalidMove
   Sentinel -> InvalidMove
   Piece otherpieceColor pieceTypes -> if (otherpieceColor == mypieceColor) then InvalidMove else TakeMove
-
--- PAWN MOVEMENTS
-listPawnMovement :: PiecePosition -> PieceColor -> Bool -> Board -> [PiecePosition]
-listPawnMovement index pieceColor hasMoved board = (pawnFrontMove index pieceColor hasMoved board) ++ (listPawnTakeMovement index pieceColor board)
-
-listPawnTakeMovement :: PiecePosition -> PieceColor -> Board -> [PiecePosition]
-listPawnTakeMovement index pieceColor board = let takeMovements = if pieceColor == White then [leftTop, topRight] else [bottomLeft, rightBottom]
-                                         in listMoveUsingDirection False index takeMovements (moveTypeOnlyTakeAllowed pieceColor board)
-
-pawnFrontMove :: PiecePosition -> PieceColor -> Bool -> Board -> [PiecePosition]
-pawnFrontMove index pieceColor hasMoved board = let frontMovement = if pieceColor == White then top else bottom
-                                           in let moveTypeF = moveTypeTakeNonAllowed board
-                                           in pawnFrontMoveAux frontMovement moveTypeF hasMoved (listMoveNonRecursive index frontMovement moveTypeF)
-
-pawnFrontMoveAux :: (PiecePosition -> PiecePosition) -> (PiecePosition -> MoveType) -> Bool -> [PiecePosition] -> [PiecePosition]
-pawnFrontMoveAux _ _ _ [] = []
-pawnFrontMoveAux _ _ True positions = positions
-pawnFrontMoveAux moveFunc moveTypeF hasMoved (pp:[]) = pp:(listMoveNonRecursive pp moveFunc moveTypeF)
-
-

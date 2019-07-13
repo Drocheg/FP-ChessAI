@@ -1,4 +1,4 @@
-module UI (printBoard, printPossibleMoves, loadPiecePictures) where
+module UI (printBoard, printPossibleMoves, loadPiecePictures, printGameEnd) where
 import BoardDataTypes
 import Boards
 import Data.Char

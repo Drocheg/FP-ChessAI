@@ -35,7 +35,7 @@ minimax node treeInfo indexM ab = minimaxAux node ((nextNodesF treeInfo) node) t
 
 minimaxAux :: a -> [a] -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
 minimaxAux node _ (TreeInfo scoreF _ _ 0 _) indexM ab = MovePath (scoreF node) 0 []
-minimaxAux node [] (TreeInfo _ scoreEmptyF _ _ _) indexM ab = MovePath (scoreEmptyF node) 0 []
+minimaxAux node [] (TreeInfo _ scoreEmptyF _ level isMax) indexM ab = let levelBonus = if isMax then (-level) else level in MovePath (levelBonus+(scoreEmptyF node)) 0 []
 minimaxAux node (r:rs) treeInfo indexM ab = minimaxHorizontal (nextLevelMinimax r treeInfo 0 ab) rs treeInfo 1 ab
 
 minimaxHorizontal :: MovePath a -> [a] -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
