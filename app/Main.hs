@@ -5,7 +5,7 @@ import SpeedTests
 
 import BoardDataTypes
 --main :: IO ()
---main = speedTest (chessMinimaxWithInfo 4) (chessMinimaxSortedWithInfo 4)
+--main = speedTest (chessMinimaxSortedWithInfo 4) (chessMinimaxWithInfo 4)
 
 -- import UI
 -- main :: IO ()
@@ -23,8 +23,7 @@ import BoardDataTypes
 --   let aIboard = chessMinimaxSorted 4 board
 --   gameTick aIboard
 --
--- | Display "Hello World" in a window.
---
+
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import Data.Maybe

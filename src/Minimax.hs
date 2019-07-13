@@ -19,7 +19,8 @@ data TreeInfo a = TreeInfo { scoreF::(a -> Int),
                              scoreEmptyF :: (a -> Int),
                              nextNodesF::(a -> [a]),
                              level::Int,
-                             isMax::Bool --  function to get score, Level, isMax
+                             isMax::Bool,
+                             ab::AlphaBeta
 }
 
 minimaxAlphaBeta :: (a -> Int) -> (a -> Int) -> (a -> [a]) -> Int -> Int -> Int -> Bool -> a ->  a
@@ -28,40 +29,36 @@ minimaxAlphaBeta scoreF scoreEmptyF nextNodesF minScore maxScore level isMax nod
 
 minimaxAlphaBetaWithInfo :: (a -> Int) -> (a -> Int) -> (a -> [a]) -> Int -> Int -> Int -> Bool -> a -> MovePath a
 minimaxAlphaBetaWithInfo scoreF scoreEmptyF nextNodesF minScore maxScore level isMax node
-    = minimax node (TreeInfo scoreF scoreEmptyF nextNodesF level isMax) 0 (AlphaBeta minScore maxScore)
+    = minimax node (TreeInfo scoreF scoreEmptyF nextNodesF level isMax (AlphaBeta minScore maxScore))
 
-minimax :: a -> TreeInfo a -> Int -> AlphaBeta -> MovePath a -- Tree, treeInfo, indexMove
-minimax node treeInfo indexM ab = minimaxAux node ((nextNodesF treeInfo) node) treeInfo indexM ab
+minimax :: a -> TreeInfo a -> MovePath a
+minimax node (TreeInfo scoreF _ _ 0 _ _) = MovePath (scoreF node) 0 []
+minimax node treeInfo = minimaxAux node ((nextNodesF treeInfo) node) treeInfo
 
-minimaxAux :: a -> [a] -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
-minimaxAux node _ (TreeInfo scoreF _ _ 0 _) indexM ab = MovePath (scoreF node) 0 []
-minimaxAux node [] (TreeInfo _ scoreEmptyF _ level isMax) indexM ab = let levelBonus = if isMax then (-level) else level in MovePath (levelBonus+(scoreEmptyF node)) 0 []
-minimaxAux node (r:rs) treeInfo indexM ab = minimaxHorizontal (nextLevelMinimax r treeInfo 0 ab) rs treeInfo 1 ab
+minimaxAux :: a -> [a] -> TreeInfo a -> MovePath a
+minimaxAux node [] (TreeInfo _ scoreEmptyF _ level isMax ab) = MovePath (leafScore scoreEmptyF level isMax node) 0 []
+minimaxAux node (r:rs) treeInfo = minimaxHorizontal (nextLevelMinimax r treeInfo) rs treeInfo
 
-minimaxHorizontal :: MovePath a -> [a] -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
-minimaxHorizontal movePath [] _ _ _ = movePath
-minimaxHorizontal movePath (r:rs) (TreeInfo scoreF scoreEmptyF nextNodesF level True) indexM (AlphaBeta alpha beta) =
-    let treeInfo = (TreeInfo scoreF scoreEmptyF nextNodesF level True) in
-    let score = (pathScore movePath) in
-    if score > beta then movePath
-    else let newAlpha = max score alpha in
-        minimaxHorizontalAux movePath (r:rs) treeInfo indexM (AlphaBeta newAlpha beta)
-minimaxHorizontal movePath (r:rs) (TreeInfo scoreF scoreEmptyF nextNodesF level False) indexM (AlphaBeta alpha beta) =
-    let treeInfo = (TreeInfo scoreF scoreEmptyF nextNodesF level False) in
-    let score = (pathScore movePath) in
-    if score < alpha then movePath
-    else let newBeta = min score beta in
-        minimaxHorizontalAux movePath (r:rs) treeInfo indexM (AlphaBeta alpha newBeta)
+minimaxHorizontal :: MovePath a -> [a] -> TreeInfo a -> MovePath a
+minimaxHorizontal movePath [] _  = movePath
+minimaxHorizontal movePath (r:rs) (TreeInfo scoreF scoreEmptyF nextNodesF level isMax (AlphaBeta alpha beta)) =
+    let score = (pathScore movePath)
+        pruneCondition = if isMax then score > beta else score < alpha
+        newAlphaBeta = if isMax then (AlphaBeta (max score alpha) beta) else (AlphaBeta alpha (min score beta)) in
+    if pruneCondition then movePath
+    else let treeInfo = TreeInfo scoreF scoreEmptyF nextNodesF level isMax newAlphaBeta
+             bestMove = calculateBestMove isMax movePath (nextLevelMinimax r treeInfo)
+         in minimaxHorizontal bestMove rs treeInfo
 
-minimaxHorizontalAux :: MovePath a -> [a] -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
-minimaxHorizontalAux movePath (r:rs) treeInfo indexM ab =  minimaxHorizontal (bestMove (isMax treeInfo) movePath (nextLevelMinimax r treeInfo indexM ab)) rs treeInfo (indexM+1) ab
-
-nextLevelMinimax :: a -> TreeInfo a -> Int -> AlphaBeta -> MovePath a
-nextLevelMinimax node (TreeInfo scoreF scoreEmptyF nextNodesF level isMax) indexM ab = appendNode (minimax node (TreeInfo scoreF scoreEmptyF nextNodesF (level-1) (not isMax)) indexM ab) node
+nextLevelMinimax :: a -> TreeInfo a -> MovePath a
+nextLevelMinimax node (TreeInfo scoreF scoreEmptyF nextNodesF level isMax ab) = appendNode (minimax node (TreeInfo scoreF scoreEmptyF nextNodesF (level-1) (not isMax) ab)) node
 
 appendNode :: MovePath a -> a -> MovePath a
 appendNode (MovePath score nExplored nodes) node = MovePath score (nExplored + 1) (node:nodes)
 
-bestMove :: Bool -> MovePath a -> MovePath a -> MovePath a
-bestMove isMax (MovePath score1 nExplored1 ndx1) (MovePath score2 nExplored2 ndx2) = let comp = if isMax then (score1 >= score2) else (score1 <= score2) in -- >= and <= because in case of tie we don't want to change
+calculateBestMove :: Bool -> MovePath a -> MovePath a -> MovePath a
+calculateBestMove isMax (MovePath score1 nExplored1 ndx1) (MovePath score2 nExplored2 ndx2) = let comp = if isMax then (score1 >= score2) else (score1 <= score2) in -- >= and <= because in case of tie we don't want to change
     if comp then (MovePath score1 (nExplored1 + nExplored2) ndx1) else (MovePath score2 (nExplored1 + nExplored2) ndx2)
+
+leafScore :: (a -> Int) -> Int -> Bool -> a -> Int
+leafScore scoreEmptyF level isMax node =  let levelBonus = if isMax then (-level) else level in levelBonus + (scoreEmptyF node)
