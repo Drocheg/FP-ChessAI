@@ -30,7 +30,11 @@ import Data.Maybe
 import Data.List
 import qualified Data.Map as Map
 
+data Controller = AI | Human deriving (Show)
+
 data GameState = GameState {
+  _whitePlayer::Controller,
+  _blackPlayer::Controller,
   _board::Board,
   _selectedPosition::Maybe PiecePosition,
   _undoQ::[Board]
@@ -38,28 +42,36 @@ data GameState = GameState {
 
 window = InWindow "Chess" (512, 512) (10, 10)
 
-handleInput (EventKey (Char 'r') Down _ _) gs = gs {
-  _board = initialBoard
-}
+oppositeController AI = Human
+oppositeController Human = AI
 
-handleInput (EventKey (Char 'u') Down _ _) (GameState board selPos (x: xs)) = GameState x selPos xs
-handleInput (EventKey (Char 'u') Down _ _) (GameState board selPos []) = GameState board selPos []
 
-handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState board (Just selectedPosition) undo) =
+handleInputKey (EventKey (Char 'r') Down _ _) gs = gs { _board = initialBoard }
+handleInputKey (EventKey (Char 'm') Down _ _) gs = case (_whitePlayer gs) of 
+  AI -> gs { _whitePlayer = Human, _blackPlayer = AI}
+  Human -> case (_blackPlayer gs) of 
+    AI -> gs { _blackPlayer = Human}
+    Human -> gs { _whitePlayer = AI}
+
+handleInputKey (EventKey (Char 'u') Down _ _) (GameState w b board selPos (x: xs)) = GameState w b x selPos xs
+handleInputKey (EventKey (Char 'u') Down _ _) (GameState w b board selPos []) = GameState w b board selPos []
+handleInputKey _ gs = gs
+
+handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState w b board (Just selectedPosition) undo) =
   let nextPiecePosition = toPiecePosition offset;
       move = find (\(_,startPosition,endPosition) -> endPosition == nextPiecePosition && startPosition == selectedPosition) $ listAllMoves board; in
   case (move) of
-    Nothing -> GameState board Nothing undo
-    Just (newBoard, _, _) -> GameState newBoard Nothing (board:undo)
+    Nothing -> GameState w b board Nothing undo
+    Just (newBoard, _, _) -> GameState w b newBoard Nothing (board:undo)
 
-handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState board Nothing undo) =
+handleInput (EventKey (MouseButton LeftButton) Down _ offset) (GameState w b board Nothing undo) =
   let nextPiecePosition = toPiecePosition offset;
       move = find (\(_,startPosition,_) -> startPosition == nextPiecePosition) $ listAllMoves board; in
   case (move) of
-    Nothing -> GameState board Nothing undo
-    Just (_, startPosition, _) -> GameState board (Just startPosition) undo
+    Nothing -> GameState w b board Nothing undo
+    Just (_, startPosition, _) -> GameState w b board (Just startPosition) undo
 
-handleInput _ gs = gs
+handleInput e gs = handleInputKey e gs
 
 toPiecePosition (x, y) = PiecePosition ((256 + floor y) `div` 64) ((256 + floor x) `div` 64)
 
@@ -73,40 +85,85 @@ drawPiece piecePictureMap board (piecePosition, piece) =
 drawPieces piecePictureMap board = Pictures
   $ map (drawPiece piecePictureMap board) (allPieces board)
 
-renderMovementSquare = color (makeColor 0 0.2 0 0.2) $ polygon [(-32, -32), (-32, 32), (32, 32), (32, -32)]
+renderMovementSquare = color (makeColor 0 0.2 0.2 0.2) $ polygon [(-32, -32), (-32, 32), (32, 32), (32, -32)]
 
 
 drawMovement (Just selectedPosition) (_, startSquare, endSquare) = if (selectedPosition == startSquare) then
   translatePiecePosition endSquare renderMovementSquare else Blank
 drawMovement Nothing (_, startSquare, _) = translatePiecePosition startSquare renderMovementSquare
 
-drawMovements (GameState board selectedPosition _) = case (getColor board) of
-  White -> Pictures
-    $ map (drawMovement selectedPosition) (listAllMoves board)
-  Black -> Blank
 
-drawFrame db dp dm gs = Pictures [
-  db,                            -- Board Picture
-  dm gs,                         -- Movements Picture
-  dp (_board gs)                 -- Pieces Picture
+getPlayingPlayer gs = case (getColor (_board gs)) of 
+  White -> _whitePlayer gs
+  Black -> _blackPlayer gs
+
+drawMovements gs = case (getPlayingPlayer gs) of
+  Human -> Pictures
+    $ map (drawMovement (_selectedPosition gs)) (listAllMoves (_board gs))
+  AI -> Blank
+
+textForWinner White = "White wins"
+textForWinner Black = "Black wins"
+
+drawVictory board = let movements = length $ listAllMoves board; in
+  if (movements == 0) then
+    let endGameText = if (isKingBeingChecked (flipPieceColor board)) 
+        then textForWinner (oppositePieceColor(_pieceColor board))
+        else "Draw"; in
+    Translate (-100) 0
+    $ Pictures [
+      color (makeColor 0 0 0 0.5)
+      $ polygon [(-16, -8), (-16, 32), (192, 32), (192, -8)],
+      color (makeColor 1 1 1 1)
+      $ Scale 0.25 0.25
+      $ Text endGameText
+    ]
+  else Blank
+
+drawMode gs = Translate (-255) (240)
+  $ Pictures [
+    color (makeColor 0 0 0 0.5)
+    $ polygon [(-16, -16), (-16, 32), (120, 32), (120, -16)],
+    Scale 0.12 0.12
+    $ color (makeColor 1 1 1 1)
+    $ Pictures [
+      Text ("White: " ++ show ( _whitePlayer gs)),
+      Translate 0 (-100) $ Text ("Black: " ++ show (_blackPlayer gs))
+      ]
   ]
 
-handleAI _ gs = case (getColor (_board gs)) of
-  White -> gs
-  Black -> gs {
-    _board = chessMinimaxSorted 4 (_board gs)
-  }
+drawFrame db dp dm dw dmode gs = Pictures [
+  db,                            -- Board Picture
+  dm gs,                         -- Movements Picture
+  dp (_board gs),                -- Pieces Picture
+  dw (_board gs),                -- Draw win state
+  dmode gs                          -- Draw mode
+  ]
 
-handleInputWrapper e gs = case (getColor (_board gs)) of
-  White -> handleInput e gs
-  Black -> gs
+handleAIAux AI gs = gs {
+  _board = chessMinimaxSorted 4 (_board gs)
+}
+handleAIAux Human gs = gs
+
+handleAI _ gs = selectColor gs (handleAIAux (_whitePlayer gs)) (handleAIAux (_blackPlayer gs))
+
+handleInputWrapperAux AI e gs = handleInputKey e gs
+handleInputWrapperAux Human e gs = handleInput e gs
+
+handleInputWrapper e gs = selectColor gs (handleInputWrapperAux (_whitePlayer gs) e) (handleInputWrapperAux (_blackPlayer gs) e)
+
+selectColor gs whiteFunc blackFunc = case (getColor (_board gs)) of 
+  White -> whiteFunc gs
+  Black -> blackFunc gs
 
 main = do
   piecePictureMap <- loadPiecePictures;
   boardImage <- loadBMP "./images/board.bmp"
   let initialGameState = GameState {
+    _whitePlayer = Human,
+    _blackPlayer = AI,
     _board = initialBoard,
     _selectedPosition = Nothing,
     _undoQ = []
   }
-  play window white 60 initialGameState (drawFrame boardImage (drawPieces piecePictureMap) drawMovements) handleInput handleAI
+  play window white 60 initialGameState (drawFrame boardImage (drawPieces piecePictureMap) drawMovements drawVictory drawMode) handleInput handleAI

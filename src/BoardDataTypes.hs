@@ -39,9 +39,6 @@ type PieceArray = Array Int Piece
 data WinState = WhiteWins | BlackWins | Draw deriving (Show)
 data Board = Board {
   _pieceColor::PieceColor,
-  _winState::Maybe WinState,
-  _whitePieces::[PiecePosition],
-  _blackPieces::[PiecePosition],
   _score::Int,
   _pieces::PieceArray
 } deriving (Show)
