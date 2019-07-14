@@ -24,7 +24,8 @@ dependencies:
 - array
 - time
 - containers
-- gloss 
+- gloss
+- Unique >= 0.4.7.6
 
 library:
   source-dirs: src

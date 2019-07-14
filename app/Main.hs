@@ -7,27 +7,11 @@ import BoardDataTypes
 --main :: IO ()
 --main = speedTest (chessMinimaxSortedWithInfo 4) (chessMinimaxWithInfo 4)
 
--- import UI
--- main :: IO ()
--- main = do 
---   gameTick initialBoard
-  
--- gameTick :: Board -> IO ()
--- gameTick board = do
---   putStrLn (printBoard board)
---   let boards = listAllMoves board
---   putStrLn (printPossibleMoves  0 board boards)
---   option <- getLine
---   let (board, _, _) = boards!!(read option)
---   putStrLn (printBoard board)
---   let aIboard = chessMinimaxSorted 4 board
---   gameTick aIboard
---
-
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import Data.Maybe
 import Data.List
+import Data.List.Unique
 import qualified Data.Map as Map
 
 data Controller = AI | Human deriving (Show)
@@ -47,9 +31,9 @@ oppositeController Human = AI
 
 
 handleInputKey (EventKey (Char 'r') Down _ _) gs = gs { _board = initialBoard }
-handleInputKey (EventKey (Char 'm') Down _ _) gs = case (_whitePlayer gs) of 
+handleInputKey (EventKey (Char 'm') Down _ _) gs = case (_whitePlayer gs) of
   AI -> gs { _whitePlayer = Human, _blackPlayer = AI}
-  Human -> case (_blackPlayer gs) of 
+  Human -> case (_blackPlayer gs) of
     AI -> gs { _blackPlayer = Human}
     Human -> gs { _whitePlayer = AI}
 
@@ -85,29 +69,31 @@ drawPiece piecePictureMap board (piecePosition, piece) =
 drawPieces piecePictureMap board = Pictures
   $ map (drawPiece piecePictureMap board) (allPieces board)
 
-renderMovementSquare = color (makeColor 0 0.2 0.2 0.2) $ polygon [(-32, -32), (-32, 32), (32, 32), (32, -32)]
+renderMovementSquare = color (makeColor 0 0.2 0.2 0.4) $ polygon [(-32, -32), (-32, 32), (32, 32), (32, -32)]
 
-
-drawMovement (Just selectedPosition) (_, startSquare, endSquare) = if (selectedPosition == startSquare) then
-  translatePiecePosition endSquare renderMovementSquare else Blank
-drawMovement Nothing (_, startSquare, _) = translatePiecePosition startSquare renderMovementSquare
-
-
-getPlayingPlayer gs = case (getColor (_board gs)) of 
+getPlayingPlayer gs = case (getColor (_board gs)) of
   White -> _whitePlayer gs
   Black -> _blackPlayer gs
 
 drawMovements gs = case (getPlayingPlayer gs) of
   Human -> Pictures
-    $ map (drawMovement (_selectedPosition gs)) (listAllMoves (_board gs))
+    $ drawMovementsAux (_selectedPosition gs) (_board gs)
   AI -> Blank
+
+drawMovementsAux (Just selectedPosition) board = map (drawMovement selectedPosition) (listAllMoves board)
+drawMovementsAux Nothing board = map drawMovablePieces ((\(uniqueList, _, _) -> uniqueList) (complex (map (\(_, startSquare, _) -> startSquare) (listAllMoves board))))
+
+drawMovement selectedPosition (_, startSquare, endSquare) = if (selectedPosition == startSquare) then
+  translatePiecePosition endSquare renderMovementSquare else Blank
+
+drawMovablePieces startSquare = translatePiecePosition startSquare renderMovementSquare
 
 textForWinner White = "White wins"
 textForWinner Black = "Black wins"
 
 drawVictory board = let movements = length $ listAllMoves board; in
   if (movements == 0) then
-    let endGameText = if (isKingBeingChecked (flipPieceColor board)) 
+    let endGameText = if (isKingBeingChecked (flipPieceColor board))
         then textForWinner (oppositePieceColor(_pieceColor board))
         else "Draw"; in
     Translate (-100) 0
@@ -152,7 +138,7 @@ handleInputWrapperAux Human e gs = handleInput e gs
 
 handleInputWrapper e gs = selectColor gs (handleInputWrapperAux (_whitePlayer gs) e) (handleInputWrapperAux (_blackPlayer gs) e)
 
-selectColor gs whiteFunc blackFunc = case (getColor (_board gs)) of 
+selectColor gs whiteFunc blackFunc = case (getColor (_board gs)) of
   White -> whiteFunc gs
   Black -> blackFunc gs
 
