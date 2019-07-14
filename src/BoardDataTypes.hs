@@ -53,14 +53,16 @@ type BoardWithMovement = (Board, PiecePosition, PiecePosition)
 getIndex :: PiecePosition -> Int
 getIndex (PiecePosition x y) = convertXYto10x12 x y
 
+getPiecePosition :: Int -> PiecePosition
+getPiecePosition idx = PiecePosition ((idx `div` 10) - 2) ((idx `mod` 10) - 1)
+--  0  0  -> 2 1 -> 21
+-- -1 -1  -> 1 0 -> 10
+
 convert8x8to10x12 :: Int -> Int
 convert8x8to10x12 index = convertXYto10x12 (index `div` 8) (index `mod` 8)
 
 convertXYto10x12 :: Int -> Int -> Int
 convertXYto10x12 x y = (x + 2) * 10 + (y + 1)
-
-getPieces::Board -> PieceArray
-getPieces board = _pieces board;
 
 flipPieceColor board = board {_pieceColor = oppositePieceColor (_pieceColor board)}
 
@@ -71,10 +73,8 @@ oppositePieceColor Black = White
 getColor::Board -> PieceColor
 getColor board = _pieceColor board
 
-getPiecePosition :: Int -> PiecePosition
-getPiecePosition idx = PiecePosition ((idx `div` 10) - 2) ((idx `mod` 10) - 1)
---  0  0  -> 2 1 -> 21
--- -1 -1  -> 1 0 -> 10
+getPieces::Board -> PieceArray
+getPieces board = _pieces board;
 
 getPiece::Board -> PiecePosition -> Piece
 getPiece board piecePosition = getPieceByIndex board (getIndex piecePosition)

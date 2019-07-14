@@ -33,29 +33,6 @@ initialBoard = Board {
         ])
 }
 
--- testBoard3 = Board {
---   _pieceColor = White,
---   _winState = Nothing,
---   _whitePieces = [],
---   _blackPieces = [],
---   _score = 0,
---   _pieces = (listArray (0, 119) [
---         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
---         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
---         Sentinel                , None                    , None                    , None                    , Piece White Queen False , None                    , Piece White Queen False , Piece White Queen False , None                    , Sentinel                ,
---         Sentinel                , Piece Black (Pawn False)  , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
---         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
---         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
---         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
---         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
---         Sentinel                , None                    , None                    , None                    , None                    , None                    , None                    , None                    , None                    , Sentinel                ,
---         Sentinel                , Piece Black Rook False  , None                    , None                    , None                    , Piece Black King False  , None                    , None                    , Piece Black Rook False  , Sentinel                ,
---         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
---         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel
---         ])
--- }
-
-
 checkPieceColor ::PieceColor -> Piece -> Bool
 checkPieceColor _ None = False
 checkPieceColor _ Sentinel = False
