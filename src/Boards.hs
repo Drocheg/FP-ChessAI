@@ -13,9 +13,6 @@ initialBoard::Board
 
 initialBoard = Board {
   _pieceColor = White,
-  _winState = Nothing,
-  _whitePieces = [],
-  _blackPieces = [],
   _score = 0,
   _pieces = (listArray (0, 119) [
         Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                , Sentinel                ,
@@ -75,9 +72,6 @@ calculateBoardWithMovement oldPosition board newPosition =
         newScore    = _score board - (scorePiece newPosition takenPiece) + (scorePiece newPosition movedPiece) - (scorePiece oldPosition movingPiece) in
     (Board {
       _pieceColor = oppositePieceColor $ _pieceColor board,
-      _winState = _winState board,
-      _whitePieces = _whitePieces board,
-      _blackPieces = _blackPieces board,
       _score = newScore,
       _pieces = pieces // [((getIndex oldPosition), None), ((getIndex newPosition), movedPiece)]
     }, oldPosition, newPosition)
