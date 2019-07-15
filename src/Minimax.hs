@@ -25,7 +25,9 @@ data TreeInfo a = TreeInfo { scoreF::(a -> Int),
 
 minimaxAlphaBeta :: (a -> Int) -> (a -> Int) -> (a -> [a]) -> Int -> Int -> Int -> Bool -> a ->  a
 minimaxAlphaBeta scoreF scoreEmptyF nextNodesF minScore maxScore level isMax node =
-    (nodes (minimaxAlphaBetaWithInfo scoreF scoreEmptyF nextNodesF minScore maxScore level isMax node)) !! 0
+     let resultNodes = (nodes (minimaxAlphaBetaWithInfo scoreF scoreEmptyF nextNodesF minScore maxScore level isMax node))
+     in if (length resultNodes) == 0 then node else resultNodes !! 0
+
 
 minimaxAlphaBetaWithInfo :: (a -> Int) -> (a -> Int) -> (a -> [a]) -> Int -> Int -> Int -> Bool -> a -> MovePath a
 minimaxAlphaBetaWithInfo scoreF scoreEmptyF nextNodesF minScore maxScore level isMax node
