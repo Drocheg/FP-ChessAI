@@ -5,7 +5,7 @@ import SpeedTests
 
 import BoardDataTypes
 --main :: IO ()
---main = speedTest (chessMinimaxSortedWithInfo 4) (chessMinimaxWithInfo 4)
+--main = speedTest (chessMinimaxSortedWithInfo 5) (chessMinimaxSortedWithInfo 4) testBoard
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
