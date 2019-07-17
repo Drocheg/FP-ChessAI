@@ -37,8 +37,7 @@ checkPieceColor playerColor (Piece pieceColor _) = pieceColor == playerColor
 
 --List all next boards with the movement made for a given piece
 listBoardsWithMovement :: PiecePosition -> Board -> [BoardWithMovement]
-listBoardsWithMovement piecePosition board = filter (not.isKingBeingChecked.(\(x,_,_) -> x))
-  ((map (calculateBoardWithMovement piecePosition board) (listMoves piecePosition board)) ++ (listCastlingBoards board))
+listBoardsWithMovement piecePosition board = (map (calculateBoardWithMovement piecePosition board) (listMoves piecePosition board)) ++ (listCastlingBoards board)
 
 calculateBoardWithMovement :: PiecePosition -> Board -> PiecePosition -> BoardWithMovement
 calculateBoardWithMovement oldPosition board newPosition =
@@ -86,9 +85,13 @@ validCastling :: [Piece] -> Piece -> Piece -> Bool
 validCastling emptyPieces (Piece _ (Rook False)) (Piece _ (King False)) = all (\x -> x == None) emptyPieces
 validCastling _ _ _ = False
 
+listAllMovesPrev::Board -> [BoardWithMovement]
+listAllMovesPrev board = foldr (\x a -> listBoardsWithMovement (getPiecePosition x) board ++ a) [] (filterMovablePiecesOnly board)
 
 listAllMoves::Board -> [BoardWithMovement]
-listAllMoves board = foldr (\x a -> listBoardsWithMovement (getPiecePosition x) board ++ a) [] (filterMovablePiecesOnly board)
+listAllMoves board = filter (isValidBoard.(\(x,_,_) -> x)) (listAllMovesPrev board)
+
+
 
 -- Return every piece that could theoretically move this turn
 filterMovablePiecesOnly :: Board -> [Int]
@@ -99,7 +102,7 @@ allPieces board = map (\i -> (getPiecePosition i, getPieceByIndex board i)) allP
 
 -- Array with all the possibles next states given a board
 listNextBoards :: Board -> [Board]
-listNextBoards board = map (\(x, _, _) -> x) (listAllMoves board)
+listNextBoards board = map (\(x, _, _) -> x) (listAllMovesPrev board)
 
 -- Array with all the possibles next states sorted by score given a board
 listNextBoardsSorted :: Board -> [Board]
@@ -127,16 +130,18 @@ loseScore :: PieceColor -> Int
 loseScore White = (-50000)
 loseScore Black = 50000
 
+isValidBoard :: Board -> Bool
+isValidBoard = (not.isKingBeingChecked)
 
 -- Call the minimax function with the chess variables
 chessMinimax :: Int -> Board -> Board
-chessMinimax deepness board = minimaxAlphaBeta scoreBoard scoreBoardNoMovements listNextBoards (-1000000) 1000000 deepness ((_pieceColor board) == White) board
+chessMinimax deepness board = minimaxAlphaBeta scoreBoard scoreBoardNoMovements listNextBoards isValidBoard (-1000000) 1000000 deepness ((_pieceColor board) == White) board
 
 chessMinimaxWithInfo :: Int -> Board -> MovePath Board
-chessMinimaxWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard scoreBoardNoMovements listNextBoards (-1000000) 1000000 deepness ((_pieceColor board) == White) board
+chessMinimaxWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard scoreBoardNoMovements listNextBoards isValidBoard (-1000000) 1000000 deepness ((_pieceColor board) == White) board
 
 chessMinimaxSorted :: Int -> Board -> Board
-chessMinimaxSorted deepness board = minimaxAlphaBeta scoreBoard scoreBoardNoMovements listNextBoardsSorted (-1000000) 1000000 deepness ((_pieceColor board) == White) board
+chessMinimaxSorted deepness board = minimaxAlphaBeta scoreBoard scoreBoardNoMovements listNextBoardsSorted isValidBoard (-1000000) 1000000 deepness ((_pieceColor board) == White) board
 
 chessMinimaxSortedWithInfo :: Int -> Board -> MovePath Board
-chessMinimaxSortedWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard scoreBoardNoMovements listNextBoardsSorted (-1000000) 1000000 deepness ((_pieceColor board) == White) board
+chessMinimaxSortedWithInfo deepness board = minimaxAlphaBetaWithInfo scoreBoard scoreBoardNoMovements listNextBoardsSorted isValidBoard (-1000000) 1000000 deepness ((_pieceColor board) == White) board
