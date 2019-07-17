@@ -103,8 +103,8 @@ listNextBoards board = map (\(x, _, _) -> x) (listAllMoves board)
 
 -- Array with all the possibles next states sorted by score given a board
 listNextBoardsSorted :: Board -> [Board]
-listNextBoardsSorted board = let sortF = if (_pieceColor board) == White then (\b1 b2 ->  compare (scoreBoard b2) (scoreBoard b1))
-                                                                         else (\b1 b2 ->  compare (scoreBoard b1) (scoreBoard b2))
+listNextBoardsSorted board = let sortF = if (_pieceColor board) == White then (\b1 b2 ->  compare (scoreBoard b1) (scoreBoard b2))
+                                                                         else (\b1 b2 ->  compare (scoreBoard b2) (scoreBoard b1))
                                         in sortBy sortF (listNextBoards board)
 
 -- Checks whether the king would be taken in the next turn
